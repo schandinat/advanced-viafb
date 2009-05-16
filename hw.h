@@ -931,17 +931,16 @@ void viafb_set_dpa_gfx(int output_interface, struct GFX_DPA_SETTING\
 int viafb_setmode(int vmode_index, int hor_res, int ver_res,
 	    int video_bpp, int vmode_index1, int hor_res1,
 	    int ver_res1, int video_bpp1);
-void viafb_init_chip_info(void);
+void viafb_init_chip_info(struct pci_dev *pdev,
+			  const struct pci_device_id *pdi);
 void viafb_init_dac(int set_iga);
 int viafb_get_pixclock(int hres, int vres, int vmode_refresh);
 int viafb_get_refresh(int hres, int vres, u32 float_refresh);
 void viafb_update_device_setting(int hres, int vres, int bpp,
 			   int vmode_refresh, int flag);
-void viafb_get_mmio_info(unsigned long *mmio_base,
-	unsigned long *mmio_len);
 
+int viafb_get_fb_size_from_pci(void);
 void viafb_set_iga_path(void);
 void viafb_set_start_addr(void);
-void viafb_get_fb_info(unsigned int *fb_base, unsigned int *fb_len);
 
 #endif /* __HW_H__ */
