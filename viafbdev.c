@@ -2128,7 +2128,8 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 	 * variables
 	*/
 	viafbinfo = framebuffer_alloc(viafb_par_length + 2 * lvds_length +
-	tmds_length + crt_length + chip_length, NULL);
+				      tmds_length + crt_length + chip_length,
+				      &pdev->dev);
 	if (!viafbinfo) {
 		printk(KERN_ERR"Could not allocate memory for viafb_info.\n");
 		return -ENOMEM;
