@@ -218,7 +218,8 @@ static int viafb_check_var(struct fb_var_screeninfo *var,
 	if (!info->par)
 		return -1;
 	p_viafb_par = (struct viafb_par *)info->par;
-	if (p_viafb_par->chip_info->gfx_chip_name == UNICHROME_VX800)
+	if (p_viafb_par->chip_info->gfx_chip_name == UNICHROME_VX800 ||
+	    p_viafb_par->chip_info->gfx_chip_name == UNICHROME_VX855)
 		var->accel_flags = 0;
 
 	return 0;
@@ -1162,8 +1163,10 @@ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
 
 		if ((p_viafb_par->chip_info->gfx_chip_name ==
 			UNICHROME_CX700) ||
+			(p_viafb_par->chip_info->gfx_chip_name ==
+			UNICHROME_VX800) ||
 			((p_viafb_par->chip_info->gfx_chip_name ==
-			UNICHROME_VX800))) {
+			UNICHROME_VX855))) {
 			bg_col =
 			    (((info->cmap.red)[viacursor.image.bg_color] &
 			    0xFFC0) << 14) |

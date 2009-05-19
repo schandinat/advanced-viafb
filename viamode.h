@@ -57,6 +57,7 @@ struct res_map_refresh {
 #define NUM_TOTAL_KM400_ModeXregs ARRAY_SIZE(KM400_ModeXregs)
 #define NUM_TOTAL_CX700_ModeXregs ARRAY_SIZE(CX700_ModeXregs)
 #define NUM_TOTAL_VX800_ModeXregs ARRAY_SIZE(VX800_ModeXregs)
+#define NUM_TOTAL_VX855_ModeXregs ARRAY_SIZE(VX855_ModeXregs)
 #define NUM_TOTAL_CLE266_ModeXregs ARRAY_SIZE(CLE266_ModeXregs)
 #define NUM_TOTAL_PATCH_MODE ARRAY_SIZE(res_patch_table)
 #define NUM_TOTAL_MODETABLE ARRAY_SIZE(CLE266Modes)
@@ -170,6 +171,7 @@ extern struct io_reg CN700_ModeXregs[66];
 extern struct io_reg KM400_ModeXregs[55];
 extern struct io_reg CX700_ModeXregs[58];
 extern struct io_reg VX800_ModeXregs[58];
+extern struct io_reg VX855_ModeXregs[52];
 extern struct io_reg CLE266_ModeXregs[32];
 extern struct io_reg PM1024x768[2];
 extern struct patch_table res_patch_table[1];
