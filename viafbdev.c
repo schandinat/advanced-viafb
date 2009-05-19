@@ -214,8 +214,7 @@ static int viafb_check_var(struct fb_var_screeninfo *var,
 	if (!info->par)
 		return -1;
 	p_viafb_par = (struct viafb_par *)info->par;
-	if (p_viafb_par->chip_info->gfx_chip_name == UNICHROME_VX800 ||
-	    p_viafb_par->chip_info->gfx_chip_name == UNICHROME_VX855)
+	if (p_viafb_par->chip_info->twod_engine == VIA_2D_ENG_M1)
 		var->accel_flags = 0;
 
 	return 0;
