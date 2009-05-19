@@ -41,23 +41,11 @@ void viafb_init_2d_engine(void)
 {
 	u32 dwVQStartAddr, dwVQEndAddr;
 	u32 dwVQLen, dwVQStartL, dwVQEndL, dwVQStartEndH;
+	int i;
 
 	/* init 2D engine regs to reset 2D engine */
-	writel(0x0, viaparinfo->io_virt + VIA_REG_GEMODE);
-	writel(0x0, viaparinfo->io_virt + VIA_REG_SRCPOS);
-	writel(0x0, viaparinfo->io_virt + VIA_REG_DSTPOS);
-	writel(0x0, viaparinfo->io_virt + VIA_REG_DIMENSION);
-	writel(0x0, viaparinfo->io_virt + VIA_REG_PATADDR);
-	writel(0x0, viaparinfo->io_virt + VIA_REG_FGCOLOR);
-	writel(0x0, viaparinfo->io_virt + VIA_REG_BGCOLOR);
-	writel(0x0, viaparinfo->io_virt + VIA_REG_CLIPTL);
-	writel(0x0, viaparinfo->io_virt + VIA_REG_CLIPBR);
-	writel(0x0, viaparinfo->io_virt + VIA_REG_OFFSET);
-	writel(0x0, viaparinfo->io_virt + VIA_REG_KEYCONTROL);
-	writel(0x0, viaparinfo->io_virt + VIA_REG_SRCBASE);
-	writel(0x0, viaparinfo->io_virt + VIA_REG_DSTBASE);
-	writel(0x0, viaparinfo->io_virt + VIA_REG_PITCH);
-	writel(0x0, viaparinfo->io_virt + VIA_REG_MONOPAT1);
+	for (i = 0; i <= 0x40; i+= 4)
+		writel(0x0, viaparinfo->io_virt + i);
 
 	/* Init AGP and VQ regs */
 	switch (viaparinfo->chip_info->gfx_chip_name) {
