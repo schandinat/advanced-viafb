@@ -899,16 +899,14 @@ static void viafb_fillrect(struct fb_info *info,
 	viafb_set_2d_mode(info);
 
 	/* BitBlt Destination Address */
-	writel(((rect->dy << 16) | rect->dx),
-		viaparinfo->io_virt + VIA_REG_DSTPOS);
+	viafb_2d_writel(((rect->dy << 16) | rect->dx), VIA_REG_DSTPOS);
 	/* Dimension: width & height */
-	writel((((rect->height - 1) << 16) | (rect->width - 1)),
-		viaparinfo->io_virt + VIA_REG_DIMENSION);
+	viafb_2d_writel((((rect->height - 1) << 16) | (rect->width - 1)),
+			VIA_REG_DIMENSION);
 	/* Forground color or Destination color */
-	writel(col, viaparinfo->io_virt + VIA_REG_FGCOLOR);
+	viafb_2d_writel(col, VIA_REG_FGCOLOR);
 	/* GE Command */
-	writel((0x01 | 0x2000 | (rop << 24)),
-		viaparinfo->io_virt + VIA_REG_GECMD);
+	viafb_2d_writel((0x01 | 0x2000 | (rop << 24)), VIA_REG_GECMD);
 
 }
 
@@ -943,15 +941,14 @@ static void viafb_copyarea(struct fb_info *info,
 	viafb_set_2d_mode(info);
 
 	/* BitBlt Source Address */
-	writel(((sy << 16) | sx), viaparinfo->io_virt + VIA_REG_SRCPOS);
+	viafb_2d_writel(((sy << 16) | sx), VIA_REG_SRCPOS);
 	/* BitBlt Destination Address */
-	writel(((dy << 16) | dx), viaparinfo->io_virt + VIA_REG_DSTPOS);
+	viafb_2d_writel(((dy << 16) | dx), VIA_REG_DSTPOS);
 	/* Dimension: width & height */
-	writel((((area->height - 1) << 16) | (area->width - 1)),
-		   viaparinfo->io_virt + VIA_REG_DIMENSION);
+	viafb_2d_writel((((area->height - 1) << 16) | (area->width - 1)),
+			VIA_REG_DIMENSION);
 	/* GE Command */
-	writel((0x01 | direction | (0xCC << 24)),
-		viaparinfo->io_virt + VIA_REG_GECMD);
+	viafb_2d_writel((0x01 | direction | (0xCC << 24)), VIA_REG_GECMD);
 
 }
 
@@ -987,19 +984,18 @@ static void viafb_imageblit(struct fb_info *info,
 	viafb_set_2d_mode(info);
 
 	/* BitBlt Source Address */
-	writel(0x0, viaparinfo->io_virt + VIA_REG_SRCPOS);
+	viafb_2d_writel(0x0, VIA_REG_SRCPOS);
 	/* BitBlt Destination Address */
-	writel(((image->dy << 16) | image->dx),
-		viaparinfo->io_virt + VIA_REG_DSTPOS);
+	viafb_2d_writel(((image->dy << 16) | image->dx), VIA_REG_DSTPOS);
 	/* Dimension: width & height */
-	writel((((image->height - 1) << 16) | (image->width - 1)),
-		   viaparinfo->io_virt + VIA_REG_DIMENSION);
+	viafb_2d_writel((((image->height - 1) << 16) | (image->width - 1)),
+			VIA_REG_DIMENSION);
 	/* fb color */
-	writel(fg_col, viaparinfo->io_virt + VIA_REG_FGCOLOR);
+	viafb_2d_writel(fg_col, VIA_REG_FGCOLOR);
 	/* bg color */
-	writel(bg_col, viaparinfo->io_virt + VIA_REG_BGCOLOR);
+	viafb_2d_writel(bg_col, VIA_REG_BGCOLOR);
 	/* GE Command */
-	writel(0xCC020142, viaparinfo->io_virt + VIA_REG_GECMD);
+	viafb_2d_writel(0xCC020142, VIA_REG_GECMD);
 
 	for (i = 0; i < size / 4; i++) {
 		writel(*udata, viaparinfo->io_virt + VIA_MMIO_BLTBASE);

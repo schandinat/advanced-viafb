@@ -159,6 +159,7 @@
 
 #define MAXLOOP                 0xFFFFFF
 
+void viafb_2d_writel(u_int32_t val, u_int32_t reg);
 void viafb_init_accel(void);
 void viafb_init_2d_engine(void);
 void viafb_set_2d_mode(struct fb_info *info);

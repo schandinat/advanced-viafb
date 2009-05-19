@@ -20,6 +20,11 @@
  */
 #include "global.h"
 
+void viafb_2d_writel(u_int32_t val, u_int32_t reg)
+{
+	writel(val, viaparinfo->io_virt + reg);
+}
+
 void viafb_init_accel(void)
 {
 	viaparinfo->fbmem_free -= CURSOR_SIZE;
@@ -213,18 +218,18 @@ void viafb_set_2d_mode(struct fb_info *info)
 		dwGEMode |= VIA_GEM_8bpp;
 		break;
 	}
-	writel(dwGEMode, viaparinfo->io_virt + VIA_REG_GEMODE);
+	viafb_2d_writel(dwGEMode, VIA_REG_GEMODE);
 
 	/* Set source and destination base */
 	base = ((void *)info->screen_base - viafb_FB_MM);
-	writel(base >> 3, viaparinfo->io_virt + VIA_REG_SRCBASE);
-	writel(base >> 3, viaparinfo->io_virt + VIA_REG_DSTBASE);
+	viafb_2d_writel(base >> 3, VIA_REG_SRCBASE);
+	viafb_2d_writel(base >> 3, VIA_REG_DSTBASE);
 
 	/* Set source and destination pitch (128bit aligned) */
 	pitch = (viaparinfo->hres * viaparinfo->bpp >> 3) >> 3;
 	pitch_reg = pitch | (pitch << 16);
 	pitch_reg |= VIA_PITCH_ENABLE;
-	writel(pitch_reg, viaparinfo->io_virt + VIA_REG_PITCH);
+	viafb_2d_writel(pitch_reg, VIA_REG_PITCH);
 }
 
 void viafb_hw_cursor_init(void)
