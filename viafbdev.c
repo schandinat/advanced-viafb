@@ -122,9 +122,6 @@ static void viafb_setup_fixinfo(struct fb_fix_screeninfo *fix,
 	strcpy(fix->id, viafb_name);
 
 	fix->smem_len = viaparinfo->fbmem_free;
-	fix->mmio_start = viaparinfo->mmio_base;
-	fix->mmio_len = viaparinfo->mmio_len;
-
 	fix->type = FB_TYPE_PACKED_PIXELS;
 	fix->type_aux = 0;
 
@@ -2175,10 +2172,10 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 		goto out_delete_i2c;
 	}
 
-	viaparinfo->mmio_base = pci_resource_start(pdev, 1);
-	viaparinfo->mmio_len = pci_resource_len(pdev, 1);
-	viaparinfo->io_virt = ioremap_nocache(viaparinfo->mmio_base,
-		viaparinfo->mmio_len);
+	viafbinfo->fix.mmio_start = pci_resource_start(pdev, 1);
+	viafbinfo->fix.mmio_len = pci_resource_len(pdev, 1);
+	viaparinfo->io_virt = ioremap_nocache(viafbinfo->fix.mmio_start,
+					      viafbinfo->fix.mmio_len);
 	if (!viaparinfo->io_virt) {
 		printk(KERN_ERR "ioremap of MMIO failed\n");
 		rc = -EIO;
