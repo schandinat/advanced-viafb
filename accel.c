@@ -191,26 +191,18 @@ void viafb_init_2d_engine(void)
 		}
 	}
 
-	viafb_set_2d_color_depth(viaparinfo->bpp);
-
-	writel(0x0, viaparinfo->io_virt + VIA_REG_SRCBASE);
-	writel(0x0, viaparinfo->io_virt + VIA_REG_DSTBASE);
-
-	writel(VIA_PITCH_ENABLE |
-		   (((viaparinfo->hres *
-		      viaparinfo->bpp >> 3) >> 3) | (((viaparinfo->hres *
-						   viaparinfo->
-						   bpp >> 3) >> 3) << 16)),
-					viaparinfo->io_virt + VIA_REG_PITCH);
+	viafb_set_2d_mode(viafbinfo);
 }
 
-void viafb_set_2d_color_depth(int bpp)
+/* Set the mode-specific parameters for the 2D acceleration, such as
+ * BPP, source and destination base, as well as pitch */
+void viafb_set_2d_mode(struct fb_info *info)
 {
-	u32 dwGEMode;
+	u32 dwGEMode, pitch, pitch_reg, base;
 
+	/* Set BPP */
 	dwGEMode = readl(viaparinfo->io_virt + 0x04) & 0xFFFFFCFF;
-
-	switch (bpp) {
+	switch (viaparinfo->bpp) {
 	case 16:
 		dwGEMode |= VIA_GEM_16bpp;
 		break;
@@ -221,9 +213,18 @@ void viafb_set_2d_color_depth(int bpp)
 		dwGEMode |= VIA_GEM_8bpp;
 		break;
 	}
-
-	/* Set BPP and Pitch */
 	writel(dwGEMode, viaparinfo->io_virt + VIA_REG_GEMODE);
+
+	/* Set source and destination base */
+	base = ((void *)info->screen_base - viafb_FB_MM);
+	writel(base >> 3, viaparinfo->io_virt + VIA_REG_SRCBASE);
+	writel(base >> 3, viaparinfo->io_virt + VIA_REG_DSTBASE);
+
+	/* Set source and destination pitch (128bit aligned) */
+	pitch = (viaparinfo->hres * viaparinfo->bpp >> 3) >> 3;
+	pitch_reg = pitch | (pitch << 16);
+	pitch_reg |= VIA_PITCH_ENABLE;
+	writel(pitch_reg, viaparinfo->io_virt + VIA_REG_PITCH);
 }
 
 void viafb_hw_cursor_init(void)

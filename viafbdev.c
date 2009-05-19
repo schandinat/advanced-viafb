@@ -264,7 +264,7 @@ static int viafb_set_par(struct fb_info *info)
 		viafb_accel = info->var.accel_flags;
 
 		if (viafb_accel)
-			viafb_set_2d_color_depth(info->var.bits_per_pixel);
+			viafb_set_2d_mode(info);
 	}
 
 	return 0;
@@ -865,7 +865,6 @@ static void viafb_fillrect(struct fb_info *info,
 	const struct fb_fillrect *rect)
 {
 	u32 col = 0, rop = 0;
-	int pitch;
 
 	if (!viafb_accel) {
 		cfb_fillrect(info, rect);
@@ -897,22 +896,8 @@ static void viafb_fillrect(struct fb_info *info,
 		break;
 	}
 
-	/* BitBlt Source Address */
-	writel(0x0, viaparinfo->io_virt + VIA_REG_SRCPOS);
-	/* Source Base Address */
-	writel(0x0, viaparinfo->io_virt + VIA_REG_SRCBASE);
-	/* Destination Base Address */
-	writel(((unsigned long) (info->screen_base) -
-		   (unsigned long) viafb_FB_MM) >> 3,
-		   viaparinfo->io_virt + VIA_REG_DSTBASE);
-	/* Pitch */
-	pitch = (info->var.xres_virtual + 7) & ~7;
-	writel(VIA_PITCH_ENABLE |
-		   (((pitch *
-		      info->var.bits_per_pixel >> 3) >> 3) |
-		      (((pitch * info->
-		      var.bits_per_pixel >> 3) >> 3) << 16)),
-		      viaparinfo->io_virt + VIA_REG_PITCH);
+	viafb_set_2d_mode(info);
+
 	/* BitBlt Destination Address */
 	writel(((rect->dy << 16) | rect->dx),
 		viaparinfo->io_virt + VIA_REG_DSTPOS);
@@ -932,7 +917,6 @@ static void viafb_copyarea(struct fb_info *info,
 {
 	u32 dy = area->dy, sy = area->sy, direction = 0x0;
 	u32 sx = area->sx, dx = area->dx, width = area->width;
-	int pitch;
 
 	DEBUG_MSG(KERN_INFO "viafb_copyarea!!\n");
 
@@ -956,25 +940,8 @@ static void viafb_copyarea(struct fb_info *info,
 		direction |= 0x8000;
 	}
 
-	/* Source Base Address */
-	writel(((unsigned long) (info->screen_base) -
-		   (unsigned long) viafb_FB_MM) >> 3,
-		   viaparinfo->io_virt + VIA_REG_SRCBASE);
-	/* Destination Base Address */
-	writel(((unsigned long) (info->screen_base) -
-		   (unsigned long) viafb_FB_MM) >> 3,
-		   viaparinfo->io_virt + VIA_REG_DSTBASE);
-	/* Pitch */
-	pitch = (info->var.xres_virtual + 7) & ~7;
-	/* VIA_PITCH_ENABLE can be omitted now. */
-	writel(VIA_PITCH_ENABLE |
-		   (((pitch *
-		      info->var.bits_per_pixel >> 3) >> 3) | (((pitch *
-								info->var.
-								bits_per_pixel
-								>> 3) >> 3)
-							      << 16)),
-				viaparinfo->io_virt + VIA_REG_PITCH);
+	viafb_set_2d_mode(info);
+
 	/* BitBlt Source Address */
 	writel(((sy << 16) | sx), viaparinfo->io_virt + VIA_REG_SRCPOS);
 	/* BitBlt Destination Address */
@@ -993,7 +960,6 @@ static void viafb_imageblit(struct fb_info *info,
 {
 	u32 size, bg_col = 0, fg_col = 0, *udata;
 	int i;
-	int pitch;
 
 	if (!viafb_accel) {
 		cfb_imageblit(info, image);
@@ -1018,22 +984,8 @@ static void viafb_imageblit(struct fb_info *info,
 	}
 	size = image->width * image->height;
 
-	/* Source Base Address */
-	writel(0x0, viaparinfo->io_virt + VIA_REG_SRCBASE);
-	/* Destination Base Address */
-	writel(((unsigned long) (info->screen_base) -
-		   (unsigned long) viafb_FB_MM) >> 3,
-		   viaparinfo->io_virt + VIA_REG_DSTBASE);
-	/* Pitch */
-	pitch = (info->var.xres_virtual + 7) & ~7;
-	writel(VIA_PITCH_ENABLE |
-		   (((pitch *
-		      info->var.bits_per_pixel >> 3) >> 3) | (((pitch *
-								info->var.
-								bits_per_pixel
-								>> 3) >> 3)
-							      << 16)),
-				viaparinfo->io_virt + VIA_REG_PITCH);
+	viafb_set_2d_mode(info);
+
 	/* BitBlt Source Address */
 	writel(0x0, viaparinfo->io_virt + VIA_REG_SRCPOS);
 	/* BitBlt Destination Address */

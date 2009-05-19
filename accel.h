@@ -161,7 +161,7 @@
 
 void viafb_init_accel(void);
 void viafb_init_2d_engine(void);
-void set_2d_color_depth(int);
+void viafb_set_2d_mode(struct fb_info *info);
 void viafb_hw_cursor_init(void);
 void viafb_show_hw_cursor(struct fb_info *info, int Status); int
 viafb_wait_engine_idle(void); void viafb_set_2d_color_depth(int bpp);
