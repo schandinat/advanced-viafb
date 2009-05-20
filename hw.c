@@ -680,7 +680,7 @@ void viafb_set_start_addr(void)
 				size = 8 * 1024 * 1024;
 		} else {
 
-			size = viaparinfo1->memsize;
+			size = viafbinfo1->fix.smem_len;
 		}
 		offset = viafb_second_offset;
 		DEBUG_MSG(KERN_INFO

@@ -45,10 +45,7 @@ struct viafb_par {
 	u32 xoffset;
 	u32 yoffset;
 
-	void __iomem *fbmem_virt;	/*framebuffer virtual memory address */
 	void __iomem *io_virt;	/*iospace virtual memory address */
-	unsigned int fbmem;	/*framebuffer physical memory address */
-	unsigned int memsize;	/*size of fbmem */
 	unsigned int io;	/*io space address */
 	unsigned long mmio_base;	/*mmio base address */
 	unsigned long mmio_len;	/*mmio base length */

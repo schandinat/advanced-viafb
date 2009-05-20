@@ -119,10 +119,8 @@ static int viafb_update_fix(struct fb_fix_screeninfo *fix, struct fb_info *info)
 static void viafb_setup_fixinfo(struct fb_fix_screeninfo *fix,
 	struct viafb_par *viaparinfo)
 {
-	memset(fix, 0, sizeof(struct fb_fix_screeninfo));
 	strcpy(fix->id, viafb_name);
 
-	fix->smem_start = viaparinfo->fbmem;
 	fix->smem_len = viaparinfo->fbmem_free;
 	fix->mmio_start = viaparinfo->mmio_base;
 	fix->mmio_len = viaparinfo->mmio_len;
@@ -196,7 +194,7 @@ static int viafb_check_var(struct fb_var_screeninfo *var,
 		/*32 pixel alignment */
 		var->xres_virtual = (var->xres_virtual + 31) & ~31;
 	if (var->xres_virtual * var->yres_virtual * var->bits_per_pixel / 8 >
-		ppar->memsize)
+		info->fix.smem_len)
 		return -EINVAL;
 
 	/* Based on var passed in to calculate the refresh,
@@ -630,13 +628,13 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
 					    (viaparinfo->fbmem_free >> 1);
 				}
 			}
-			u.viasamm.mem_base = viaparinfo->fbmem;
+			u.viasamm.mem_base = viafbinfo->fix.smem_start;
 			u.viasamm.offset_sec = viafb_second_offset;
 		} else {
 			u.viasamm.size_prim =
-			    viaparinfo->memsize - viaparinfo->fbmem_used;
+			    viafbinfo->fix.smem_len - viaparinfo->fbmem_used;
 			u.viasamm.size_sec = 0;
-			u.viasamm.mem_base = viaparinfo->fbmem;
+			u.viasamm.mem_base = viafbinfo->fix.smem_start;
 			u.viasamm.offset_sec = 0;
 		}
 
@@ -1245,7 +1243,7 @@ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
 			}
 		}
 
-		memcpy(((struct viafb_par *)(info->par))->fbmem_virt +
+		memcpy(info->screen_base +
 		       ((struct viafb_par *)(info->par))->cursor_start,
 		       cr_data->bak, CURSOR_SIZE);
 out:
@@ -2164,15 +2162,14 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 		goto out_fb_release;
 
 	viafb_init_chip_info(pdev, ent);
-	viaparinfo->fbmem = pci_resource_start(pdev, 0);
-	viaparinfo->memsize = viafb_get_fb_size_from_pci();
-	viaparinfo->fbmem_free = viaparinfo->memsize;
+	viafbinfo->fix.smem_start = pci_resource_start(pdev, 0);
+	viafbinfo->fix.smem_len = viafb_get_fb_size_from_pci();
+	viaparinfo->fbmem_free = viafbinfo->fix.smem_len;
 	viaparinfo->fbmem_used = 0;
-	viaparinfo->fbmem_virt = ioremap_nocache(viaparinfo->fbmem,
-		viaparinfo->memsize);
-	viafbinfo->screen_base = (char *)viaparinfo->fbmem_virt;
+	viafbinfo->screen_base = ioremap_nocache(viafbinfo->fix.smem_start,
+						 viafbinfo->fix.smem_len);
 
-	if (!viaparinfo->fbmem_virt) {
+	if (!viafbinfo->screen_base) {
 		printk(KERN_ERR "ioremap of fbmem failed\n");
 		rc = -EIO;
 		goto out_delete_i2c;
@@ -2208,7 +2205,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 			viafb_second_size * 1024 * 1024;
 	}
 
-	viafb_FB_MM = viaparinfo->fbmem_virt;
+	viafb_FB_MM = viafbinfo->screen_base;
 	tmpm = viafb_mode;
 	tmpc = strsep(&tmpm, "x");
 	strict_strtoul(tmpc, 0, &default_xres);
@@ -2298,17 +2295,18 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 		}
 		viaparinfo1 = viafbinfo1->par;
 		memcpy(viaparinfo1, viaparinfo, viafb_par_length);
-		viaparinfo1->memsize = viaparinfo->memsize -
+		viafbinfo1->fix.smem_len = viafbinfo->fix.smem_len -
+							viafb_second_offset;
+		viafbinfo->fix.smem_len = viafb_second_offset;
+		viafbinfo1->screen_base = viafbinfo->screen_base +
 			viafb_second_offset;
-		viaparinfo->memsize = viafb_second_offset;
-		viaparinfo1->fbmem_virt = viaparinfo->fbmem_virt +
-			viafb_second_offset;
-		viaparinfo1->fbmem = viaparinfo->fbmem + viafb_second_offset;
+		viafbinfo1->fix.smem_start = viafbinfo->fix.smem_start + 
+							viafb_second_offset;
 
 		viaparinfo1->fbmem_used = viaparinfo->fbmem_used;
-		viaparinfo1->fbmem_free = viaparinfo1->memsize -
+		viaparinfo1->fbmem_free = viafbinfo1->fix.smem_len -
 			viaparinfo1->fbmem_used;
-		viaparinfo->fbmem_free = viaparinfo->memsize;
+		viaparinfo->fbmem_free = viafbinfo->fix.smem_len;
 		viaparinfo->fbmem_used = 0;
 		if (viafb_accel) {
 			viaparinfo1->cursor_start =
@@ -2322,7 +2320,6 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 		memcpy(viafbinfo1, viafbinfo, sizeof(struct fb_info));
 		viafbinfo1->screen_base = viafbinfo->screen_base +
 			viafb_second_offset;
-		viafbinfo1->fix.smem_start = viaparinfo1->fbmem;
 		viafbinfo1->fix.smem_len = viaparinfo1->fbmem_free;
 
 		default_var.xres = viafb_second_xres;
@@ -2398,7 +2395,7 @@ out_fb1_release:
 out_unmap_mmio:
 	iounmap(viaparinfo->io_virt);
 out_unmap_fbmem:
-	iounmap((void *)viaparinfo->fbmem_virt);
+	iounmap((void *)viafbinfo->screen_base);
 out_delete_i2c:
 	viafb_delete_i2c_buss(viaparinfo);
 out_fb_release:
@@ -2413,7 +2410,7 @@ static void __devexit via_pci_remove(struct pci_dev *pdev)
 	unregister_framebuffer(viafbinfo);
 	if (viafb_dual_fb)
 		unregister_framebuffer(viafbinfo1);
-	iounmap((void *)viaparinfo->fbmem_virt);
+	iounmap((void *)viafbinfo->screen_base);
 	iounmap(viaparinfo->io_virt);
 
 	viafb_delete_i2c_buss(viaparinfo);
