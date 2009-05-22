@@ -28,7 +28,7 @@ u8 viafb_gpio_i2c_read_lvds(struct lvds_setting_information
 	u8 data;
 
 	viaparinfo->i2c_stuff.i2c_port = plvds_chip_info->i2c_port;
-	viafb_i2c_readbyte(plvds_chip_info->lvds_chip_slave_addr, index, &data);
+	viafb_i2c_readbyte(plvds_chip_info->i2c_slave_addr, index, &data);
 
 	return data;
 }
@@ -46,7 +46,7 @@ void viafb_gpio_i2c_write_mask_lvds(struct lvds_setting_information
 		index);
 	data = (data & (~io_data.Mask)) | io_data.Data;
 
-	viafb_i2c_writebyte(plvds_chip_info->lvds_chip_slave_addr, index, data);
+	viafb_i2c_writebyte(plvds_chip_info->i2c_slave_addr, index, data);
 }
 
 void viafb_init_lvds_vt1636(struct lvds_setting_information
@@ -166,30 +166,24 @@ bool viafb_lvds_identify_vt1636(void)
 	DEBUG_MSG(KERN_INFO "viafb_lvds_identify_vt1636.\n");
 
 	/* Sense VT1636 LVDS Transmiter */
-	viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr =
-	VT1636_LVDS_I2C_ADDR;
+	viaparinfo->chip_info->lvds.i2c_slave_addr = VT1636_LVDS_I2C_ADDR;
 
 	/* Check vendor ID first: */
-	viafb_i2c_readbyte((u8) viaparinfo->chip_info->lvds_chip_info.
-	lvds_chip_slave_addr,
-		    0x00, &Buffer[0]);
-	viafb_i2c_readbyte((u8) viaparinfo->chip_info->lvds_chip_info.
-		lvds_chip_slave_addr,
-		    0x01, &Buffer[1]);
+	viafb_i2c_readbyte((u8) viaparinfo->chip_info->lvds.i2c_slave_addr,
+			   0x00, &Buffer[0]);
+	viafb_i2c_readbyte((u8) viaparinfo->chip_info->lvds.i2c_slave_addr,
+			   0x01, &Buffer[1]);
 
 	if (!((Buffer[0] == 0x06) && (Buffer[1] == 0x11)))
 		return false;
 
 	/* Check Chip ID: */
-	viafb_i2c_readbyte((u8) viaparinfo->chip_info->lvds_chip_info.
-	lvds_chip_slave_addr,
-		    0x02, &Buffer[0]);
-	viafb_i2c_readbyte((u8) viaparinfo->chip_info->lvds_chip_info.
-		lvds_chip_slave_addr,
-		    0x03, &Buffer[1]);
+	viafb_i2c_readbyte((u8) viaparinfo->chip_info->lvds.i2c_slave_addr,
+			   0x02, &Buffer[0]);
+	viafb_i2c_readbyte((u8) viaparinfo->chip_info->lvds.i2c_slave_addr,
+			   0x03, &Buffer[1]);
 	if ((Buffer[0] == 0x45) && (Buffer[1] == 0x33)) {
-		viaparinfo->chip_info->lvds_chip_info.lvds_chip_name =
-			VT1636_LVDS;
+		viaparinfo->chip_info->lvds.name = VT1636_LVDS;
 		return true;
 	}
 

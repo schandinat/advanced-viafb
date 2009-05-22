@@ -25,10 +25,10 @@ void viafb_get_device_support_state(u32 *support_state)
 {
 	*support_state = CRT_Device;
 
-	if (viaparinfo->chip_info->tmds_chip_info.tmds_chip_name == VT1632_TMDS)
+	if (viaparinfo->chip_info->tmds.name == VT1632_TMDS)
 		*support_state |= DVI_Device;
 
-	if (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name == VT1631_LVDS)
+	if (viaparinfo->chip_info->lvds.name == VT1631_LVDS)
 		*support_state |= LCD_Device;
 }
 
@@ -145,7 +145,7 @@ void viafb_set_gamma_table(int bpp, unsigned int *gamma_table)
 		return ;
 
 	/* Enable Gamma */
-	switch (viaparinfo->chip_info->gfx_chip_name) {
+	switch (viaparinfo->chip_info->name) {
 	case UNICHROME_CLE266:
 	case UNICHROME_K400:
 		viafb_write_reg_mask(SR16, VIASR, 0x80, BIT7);
@@ -176,9 +176,8 @@ void viafb_set_gamma_table(int bpp, unsigned int *gamma_table)
 	   IGA2 Gamma table simultanous. */
 	/* Switch to IGA2 Gamma Table */
 	if ((active_device_amount > 1) &&
-		!((viaparinfo->chip_info->gfx_chip_name ==
-		UNICHROME_CLE266) &&
-		(viaparinfo->chip_info->gfx_chip_revision < 15))) {
+		!((viaparinfo->chip_info->name == UNICHROME_CLE266) &&
+		(viaparinfo->chip_info->revision < 15))) {
 		viafb_write_reg_mask(SR1A, VIASR, 0x01, BIT0);
 		viafb_write_reg_mask(CR6A, VIACR, 0x02, BIT1);
 
@@ -200,7 +199,7 @@ void viafb_get_gamma_table(unsigned int *gamma_table)
 	int i;
 
 	/* Enable Gamma */
-	switch (viaparinfo->chip_info->gfx_chip_name) {
+	switch (viaparinfo->chip_info->name) {
 	case UNICHROME_CLE266:
 	case UNICHROME_K400:
 		viafb_write_reg_mask(SR16, VIASR, 0x80, BIT7);

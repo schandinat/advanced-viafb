@@ -105,8 +105,8 @@
 #define     VT1636_LVDS_I2C_ADDR    0x80
 
 struct tmds_chip_information {
-	int tmds_chip_name;
-	int tmds_chip_slave_addr;
+	int name;
+	int i2c_slave_addr;
 	int dvi_panel_id;
 	int data_mode;
 	int output_interface;
@@ -115,8 +115,8 @@ struct tmds_chip_information {
 };
 
 struct lvds_chip_information {
-	int lvds_chip_name;
-	int lvds_chip_slave_addr;
+	int name;
+	int i2c_slave_addr;
 	int data_mode;
 	int output_interface;
 	int i2c_port;
@@ -130,12 +130,12 @@ enum via_2d_engine {
 };
 
 struct chip_information {
-	int gfx_chip_name;
-	int gfx_chip_revision;
+	int name;
+	int revision;
 	enum via_2d_engine twod_engine;
-	struct tmds_chip_information tmds_chip_info;
-	struct lvds_chip_information lvds_chip_info;
-	struct lvds_chip_information lvds_chip_info2;
+	struct tmds_chip_information tmds;
+	struct lvds_chip_information lvds;
+	struct lvds_chip_information lvds2;
 };
 
 struct crt_setting_information {

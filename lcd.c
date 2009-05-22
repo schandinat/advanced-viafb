@@ -168,36 +168,30 @@ static bool lvds_identify_integratedlvds(void)
 		/* Two dual channel LCD (Internal LVDS + External LVDS): */
 		/* If we have an external LVDS, such as VT1636, we should
 		   have its chip ID already. */
-		if (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
-			viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name =
-			    INTEGRATED_LVDS;
+		if (viaparinfo->chip_info->lvds.name) {
+			viaparinfo->chip_info->lvds2.name = INTEGRATED_LVDS;
 			DEBUG_MSG(KERN_INFO "Support two dual channel LVDS!\
 				  (Internal LVDS + External LVDS)\n");
 		} else {
-			viaparinfo->chip_info->lvds_chip_info.lvds_chip_name =
-			    INTEGRATED_LVDS;
+			viaparinfo->chip_info->lvds.name = INTEGRATED_LVDS;
 			DEBUG_MSG(KERN_INFO "Not found external LVDS,\
 				  so can't support two dual channel LVDS!\n");
 		}
 	} else if (viafb_display_hardware_layout == HW_LAYOUT_LCD1_LCD2) {
 		/* Two single channel LCD (Internal LVDS + Internal LVDS): */
-		viaparinfo->chip_info->lvds_chip_info.lvds_chip_name =
-		INTEGRATED_LVDS;
-		viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name =
-			INTEGRATED_LVDS;
+		viaparinfo->chip_info->lvds.name = INTEGRATED_LVDS;
+		viaparinfo->chip_info->lvds2.name = INTEGRATED_LVDS;
 		DEBUG_MSG(KERN_INFO "Support two single channel LVDS!\
 			  (Internal LVDS + Internal LVDS)\n");
 	} else if (viafb_display_hardware_layout != HW_LAYOUT_DVI_ONLY) {
 		/* If we have found external LVDS, just use it,
 		   otherwise, we will use internal LVDS as default. */
-		if (!viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
-			viaparinfo->chip_info->lvds_chip_info.lvds_chip_name =
-			    INTEGRATED_LVDS;
+		if (!viaparinfo->chip_info->lvds.name) {
+			viaparinfo->chip_info->lvds.name = INTEGRATED_LVDS;
 			DEBUG_MSG(KERN_INFO "Found Integrated LVDS!\n");
 		}
 	} else {
-		viaparinfo->chip_info->lvds_chip_info.lvds_chip_name =
-			NON_LVDS_TRANSMITTER;
+		viaparinfo->chip_info->lvds.name = NON_LVDS_TRANSMITTER;
 		DEBUG_MSG(KERN_INFO "Do not support LVDS!\n");
 		return false;
 	}
@@ -209,42 +203,38 @@ int viafb_lvds_trasmitter_identify(void)
 {
 	viaparinfo->i2c_stuff.i2c_port = I2CPORTINDEX;
 	if (viafb_lvds_identify_vt1636()) {
-		viaparinfo->chip_info->lvds_chip_info.i2c_port = I2CPORTINDEX;
+		viaparinfo->chip_info->lvds.i2c_port = I2CPORTINDEX;
 		DEBUG_MSG(KERN_INFO
 			  "Found VIA VT1636 LVDS on port i2c 0x31 \n");
 	} else {
 		viaparinfo->i2c_stuff.i2c_port = GPIOPORTINDEX;
 		if (viafb_lvds_identify_vt1636()) {
-			viaparinfo->chip_info->lvds_chip_info.i2c_port =
-				GPIOPORTINDEX;
+			viaparinfo->chip_info->lvds.i2c_port = GPIOPORTINDEX;
 			DEBUG_MSG(KERN_INFO
 				  "Found VIA VT1636 LVDS on port gpio 0x2c \n");
 		}
 	}
 
-	if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CX700)
+	if (viaparinfo->chip_info->name == UNICHROME_CX700)
 		lvds_identify_integratedlvds();
 
-	if (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name)
+	if (viaparinfo->chip_info->lvds.name)
 		return true;
 	/* Check for VT1631: */
-	viaparinfo->chip_info->lvds_chip_info.lvds_chip_name = VT1631_LVDS;
-	viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr =
-		VT1631_LVDS_I2C_ADDR;
+	viaparinfo->chip_info->lvds.name = VT1631_LVDS;
+	viaparinfo->chip_info->lvds.i2c_slave_addr = VT1631_LVDS_I2C_ADDR;
 
 	if (check_lvds_chip(VT1631_DEVICE_ID_REG, VT1631_DEVICE_ID) != FAIL) {
 		DEBUG_MSG(KERN_INFO "\n VT1631 LVDS ! \n");
 		DEBUG_MSG(KERN_INFO "\n %2d",
-			  viaparinfo->chip_info->lvds_chip_info.lvds_chip_name);
+			  viaparinfo->chip_info->lvds.name);
 		DEBUG_MSG(KERN_INFO "\n %2d",
-			  viaparinfo->chip_info->lvds_chip_info.lvds_chip_name);
+			  viaparinfo->chip_info->lvds.name);
 		return OK;
 	}
 
-	viaparinfo->chip_info->lvds_chip_info.lvds_chip_name =
-		NON_LVDS_TRANSMITTER;
-	viaparinfo->chip_info->lvds_chip_info.lvds_chip_slave_addr =
-		VT1631_LVDS_I2C_ADDR;
+	viaparinfo->chip_info->lvds.name = NON_LVDS_TRANSMITTER;
+	viaparinfo->chip_info->lvds.i2c_slave_addr = VT1631_LVDS_I2C_ADDR;
 	return FAIL;
 }
 
@@ -471,8 +461,7 @@ static int lvds_register_read(int index)
 	u8 data;
 
 	viaparinfo->i2c_stuff.i2c_port = GPIOPORTINDEX;
-	viafb_i2c_readbyte((u8) viaparinfo->chip_info->
-	    lvds_chip_info.lvds_chip_slave_addr,
+	viafb_i2c_readbyte((u8) viaparinfo->chip_info->lvds.i2c_slave_addr,
 			(u8) index, &data);
 	return data;
 }
@@ -488,7 +477,7 @@ static void load_lcd_scaling(int set_hres, int set_vres, int panel_hres,
 
 	/* LCD Scaling Enable */
 	viafb_write_reg_mask(CR79, VIACR, 0x07, BIT0 + BIT1 + BIT2);
-	if (UNICHROME_P4M900 == viaparinfo->chip_info->gfx_chip_name) {
+	if (UNICHROME_P4M900 == viaparinfo->chip_info->name) {
 		viafb_load_scaling_factor_for_p4m900(set_hres, set_vres,
 					       panel_hres, panel_vres);
 		return;
@@ -497,7 +486,7 @@ static void load_lcd_scaling(int set_hres, int set_vres, int panel_hres,
 	/* Check if expansion for horizontal */
 	if (set_hres != panel_hres) {
 		/* Load Horizontal Scaling Factor */
-		switch (viaparinfo->chip_info->gfx_chip_name) {
+		switch (viaparinfo->chip_info->name) {
 		case UNICHROME_CLE266:
 		case UNICHROME_K400:
 			reg_value =
@@ -536,7 +525,7 @@ static void load_lcd_scaling(int set_hres, int set_vres, int panel_hres,
 	/* Check if expansion for vertical */
 	if (set_vres != panel_vres) {
 		/* Load Vertical Scaling Factor */
-		switch (viaparinfo->chip_info->gfx_chip_name) {
+		switch (viaparinfo->chip_info->name) {
 		case UNICHROME_CLE266:
 		case UNICHROME_K400:
 			reg_value =
@@ -843,7 +832,7 @@ static void load_lcd_patch_regs(int set_hres, int set_vres,
 	if ((set_iga == IGA1_IGA2) &&
 		(viaparinfo->lvds_setting_info->display_method ==
 	    LCD_EXPANDSION)) {
-		switch (viaparinfo->chip_info->gfx_chip_name) {
+		switch (viaparinfo->chip_info->name) {
 		case UNICHROME_CLE266:
 		case UNICHROME_K400:
 			load_lcd_k400_patch_tbl(set_hres, set_vres, panel_id);
@@ -907,8 +896,8 @@ static void lcd_patch_skew_dvp0(struct lvds_setting_information
 			 *plvds_setting_info,
 			 struct lvds_chip_information *plvds_chip_info)
 {
-	if (VT1636_LVDS == plvds_chip_info->lvds_chip_name) {
-		switch (viaparinfo->chip_info->gfx_chip_name) {
+	if (VT1636_LVDS == plvds_chip_info->name) {
+		switch (viaparinfo->chip_info->name) {
 		case UNICHROME_P4M900:
 			viafb_vt1636_patch_skew_on_vt3364(plvds_setting_info,
 						    plvds_chip_info);
@@ -924,8 +913,8 @@ static void lcd_patch_skew_dvp1(struct lvds_setting_information
 			 *plvds_setting_info,
 			 struct lvds_chip_information *plvds_chip_info)
 {
-	if (VT1636_LVDS == plvds_chip_info->lvds_chip_name) {
-		switch (viaparinfo->chip_info->gfx_chip_name) {
+	if (VT1636_LVDS == plvds_chip_info->name) {
+		switch (viaparinfo->chip_info->name) {
 		case UNICHROME_CX700:
 			viafb_vt1636_patch_skew_on_vt3324(plvds_setting_info,
 						    plvds_chip_info);
@@ -945,7 +934,7 @@ static void lcd_patch_skew(struct lvds_setting_information
 		lcd_patch_skew_dvp1(plvds_setting_info, plvds_chip_info);
 		break;
 	case INTERFACE_DFP_LOW:
-		if (UNICHROME_P4M900 == viaparinfo->chip_info->gfx_chip_name) {
+		if (UNICHROME_P4M900 == viaparinfo->chip_info->name) {
 			viafb_write_reg_mask(CR99, VIACR, 0x08,
 				       BIT0 + BIT1 + BIT2 + BIT3);
 		}
@@ -984,7 +973,7 @@ void viafb_lcd_set_mode(struct crt_mode_table *mode_crt_table,
 	set_vres = plvds_setting_info->v_active;
 	panel_hres = plvds_setting_info->lcd_panel_hres;
 	panel_vres = plvds_setting_info->lcd_panel_vres;
-	if (VT1636_LVDS == plvds_chip_info->lvds_chip_name)
+	if (VT1636_LVDS == plvds_chip_info->name)
 		viafb_init_lvds_vt1636(plvds_setting_info, plvds_chip_info);
 	plvds_setting_info->vclk = panel_crt_table->clk;
 	if (set_iga == IGA1) {
@@ -1060,8 +1049,8 @@ void viafb_lcd_set_mode(struct crt_mode_table *mode_crt_table,
 		/* Fetch count for IGA2 only */
 		viafb_load_fetch_count_reg(set_hres, mode_bpp / 8, set_iga);
 
-		if ((viaparinfo->chip_info->gfx_chip_name != UNICHROME_CLE266)
-		    && (viaparinfo->chip_info->gfx_chip_name != UNICHROME_K400))
+		if ((viaparinfo->chip_info->name != UNICHROME_CLE266)
+		    && (viaparinfo->chip_info->name != UNICHROME_K400))
 			viafb_load_FIFO_reg(set_iga, set_hres, set_vres);
 
 		viafb_set_color_depth(mode_bpp / 8, set_iga);
@@ -1078,8 +1067,8 @@ void viafb_lcd_set_mode(struct crt_mode_table *mode_crt_table,
 	lcd_patch_skew(plvds_setting_info, plvds_chip_info);
 
 	/* If K8M800, enable LCD Prefetch Mode. */
-	if ((viaparinfo->chip_info->gfx_chip_name == UNICHROME_K800)
-	    || (UNICHROME_K8M890 == viaparinfo->chip_info->gfx_chip_name))
+	if ((viaparinfo->chip_info->name == UNICHROME_K800)
+	    || (UNICHROME_K8M890 == viaparinfo->chip_info->name))
 		viafb_write_reg_mask(CR6A, VIACR, 0x01, BIT0);
 
 	load_lcd_patch_regs(set_hres, set_vres,
@@ -1220,28 +1209,24 @@ static void integrated_lvds_enable(struct lvds_setting_information
 void viafb_lcd_disable(void)
 {
 
-	if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266) {
+	if (viaparinfo->chip_info->name == UNICHROME_CLE266) {
 		lcd_powersequence_off();
 		/* DI1 pad off */
 		viafb_write_reg_mask(SR1E, VIASR, 0x00, 0x30);
-	} else if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CX700) {
+	} else if (viaparinfo->chip_info->name == UNICHROME_CX700) {
 		if (viafb_LCD2_ON
-		    && (INTEGRATED_LVDS ==
-			viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name))
+		    && (INTEGRATED_LVDS == viaparinfo->chip_info->lvds2.name))
 			integrated_lvds_disable(viaparinfo->lvds_setting_info,
-				&viaparinfo->chip_info->lvds_chip_info2);
-		if (INTEGRATED_LVDS ==
-			viaparinfo->chip_info->lvds_chip_info.lvds_chip_name)
+				&viaparinfo->chip_info->lvds2);
+		if (INTEGRATED_LVDS == viaparinfo->chip_info->lvds.name)
 			integrated_lvds_disable(viaparinfo->lvds_setting_info,
-				&viaparinfo->chip_info->lvds_chip_info);
-		if (VT1636_LVDS == viaparinfo->chip_info->
-			lvds_chip_info.lvds_chip_name)
+				&viaparinfo->chip_info->lvds);
+		if (VT1636_LVDS == viaparinfo->chip_info->lvds.name)
 			viafb_disable_lvds_vt1636(viaparinfo->lvds_setting_info,
-				&viaparinfo->chip_info->lvds_chip_info);
-	} else if (VT1636_LVDS ==
-	viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
+				&viaparinfo->chip_info->lvds);
+	} else if (VT1636_LVDS == viaparinfo->chip_info->lvds.name) {
 		viafb_disable_lvds_vt1636(viaparinfo->lvds_setting_info,
-				    &viaparinfo->chip_info->lvds_chip_info);
+				    &viaparinfo->chip_info->lvds);
 	} else {
 		/* DFP-HL pad off          */
 		viafb_write_reg_mask(SR2A, VIASR, 0x00, 0x0F);
@@ -1266,28 +1251,25 @@ void viafb_lcd_disable(void)
 
 void viafb_lcd_enable(void)
 {
-	if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266) {
+	if (viaparinfo->chip_info->name == UNICHROME_CLE266) {
 		/* DI1 pad on */
 		viafb_write_reg_mask(SR1E, VIASR, 0x30, 0x30);
 		lcd_powersequence_on();
-	} else if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CX700) {
-		if (viafb_LCD2_ON && (INTEGRATED_LVDS ==
-			viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name))
-			integrated_lvds_enable(viaparinfo->lvds_setting_info2, \
-				&viaparinfo->chip_info->lvds_chip_info2);
-		if (INTEGRATED_LVDS ==
-			viaparinfo->chip_info->lvds_chip_info.lvds_chip_name)
+	} else if (viaparinfo->chip_info->name == UNICHROME_CX700) {
+		if (viafb_LCD2_ON &&
+		    (INTEGRATED_LVDS == viaparinfo->chip_info->lvds2.name))
+			integrated_lvds_enable(viaparinfo->lvds_setting_info2,
+				&viaparinfo->chip_info->lvds2);
+		if (INTEGRATED_LVDS == viaparinfo->chip_info->lvds.name)
 			integrated_lvds_enable(viaparinfo->lvds_setting_info,
-				&viaparinfo->chip_info->lvds_chip_info);
-		if (VT1636_LVDS == viaparinfo->chip_info->
-			lvds_chip_info.lvds_chip_name)
-			viafb_enable_lvds_vt1636(viaparinfo->
-			lvds_setting_info, &viaparinfo->chip_info->
-			lvds_chip_info);
+				&viaparinfo->chip_info->lvds);
+		if (VT1636_LVDS == viaparinfo->chip_info->lvds.name)
+			viafb_enable_lvds_vt1636(viaparinfo->lvds_setting_info,
+						 &viaparinfo->chip_info->lvds);
 	} else if (VT1636_LVDS ==
-	viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
+	viaparinfo->chip_info->lvds.name) {
 		viafb_enable_lvds_vt1636(viaparinfo->lvds_setting_info,
-				   &viaparinfo->chip_info->lvds_chip_info);
+				   &viaparinfo->chip_info->lvds);
 	} else {
 		/* DFP-HL pad on           */
 		viafb_write_reg_mask(SR2A, VIASR, 0x0F, 0x0F);
@@ -1438,10 +1420,10 @@ void viafb_init_lvds_output_interface(struct lvds_chip_information
 		return;
 	}
 
-	switch (plvds_chip_info->lvds_chip_name) {
+	switch (plvds_chip_info->name) {
 
 	case VT1636_LVDS:
-		switch (viaparinfo->chip_info->gfx_chip_name) {
+		switch (viaparinfo->chip_info->name) {
 		case UNICHROME_CX700:
 			plvds_chip_info->output_interface = INTERFACE_DVP1;
 			break;
@@ -1460,7 +1442,7 @@ void viafb_init_lvds_output_interface(struct lvds_chip_information
 		break;
 
 	default:
-		switch (viaparinfo->chip_info->gfx_chip_name) {
+		switch (viaparinfo->chip_info->name) {
 		case UNICHROME_K8M890:
 		case UNICHROME_P4M900:
 		case UNICHROME_P4M890:

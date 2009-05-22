@@ -82,7 +82,7 @@ void viafb_init_2d_engine(void)
 		writel(0x0, viaparinfo->io_virt + i);
 
 	/* Init AGP and VQ regs */
-	switch (viaparinfo->chip_info->gfx_chip_name) {
+	switch (viaparinfo->chip_info->name) {
 	case UNICHROME_K8M890:
 	case UNICHROME_P4M900:
 	case UNICHROME_VX800:
@@ -118,7 +118,7 @@ void viafb_init_2d_engine(void)
 			((dwVQStartAddr & 0xFF000000) >> 24) |
 			((dwVQEndAddr & 0xFF000000) >> 16);
 		dwVQLen = 0x53000000 | (VQ_SIZE >> 3);
-		switch (viaparinfo->chip_info->gfx_chip_name) {
+		switch (viaparinfo->chip_info->name) {
 		case UNICHROME_K8M890:
 		case UNICHROME_P4M900:
 		case UNICHROME_VX800:
@@ -132,7 +132,7 @@ void viafb_init_2d_engine(void)
 			break;
 		}
 
-		switch (viaparinfo->chip_info->gfx_chip_name) {
+		switch (viaparinfo->chip_info->name) {
 		case UNICHROME_K8M890:
 		case UNICHROME_P4M900:
 		case UNICHROME_VX800:
@@ -199,7 +199,7 @@ void viafb_init_2d_engine(void)
 		}
 	} else {
 		/* Disable VQ */
-		switch (viaparinfo->chip_info->gfx_chip_name) {
+		switch (viaparinfo->chip_info->name) {
 		case UNICHROME_K8M890:
 		case UNICHROME_P4M900:
 		case UNICHROME_VX800:

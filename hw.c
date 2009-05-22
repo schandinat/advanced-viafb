@@ -608,7 +608,7 @@ void viafb_set_iga_path(void)
 		if (viafb_LCD_ON) {
 			if (viafb_primary_dev == LCD_Device) {
 				if (viafb_dual_fb &&
-					(viaparinfo->chip_info->gfx_chip_name ==
+					(viaparinfo->chip_info->name ==
 					UNICHROME_CLE266)) {
 					viaparinfo->
 					lvds_setting_info->iga_path = IGA2;
@@ -759,7 +759,7 @@ static void dvi_patch_skew_dvp0(void)
 	viafb_write_reg_mask(SR1B, VIASR, 0, BIT1);
 	viafb_write_reg_mask(SR2A, VIASR, 0, BIT4);
 
-	switch (viaparinfo->chip_info->gfx_chip_name) {
+	switch (viaparinfo->chip_info->name) {
 	case UNICHROME_P4M890:
 		{
 			if ((viaparinfo->tmds_setting_info->h_active == 1600) &&
@@ -791,7 +791,7 @@ static void dvi_patch_skew_dvp0(void)
 
 static void dvi_patch_skew_dvp1(void)
 {
-	switch (viaparinfo->chip_info->gfx_chip_name) {
+	switch (viaparinfo->chip_info->name) {
 	case UNICHROME_CX700:
 		{
 			break;
@@ -806,7 +806,7 @@ static void dvi_patch_skew_dvp1(void)
 
 static void dvi_patch_skew_dvp_low(void)
 {
-	switch (viaparinfo->chip_info->gfx_chip_name) {
+	switch (viaparinfo->chip_info->name) {
 	case UNICHROME_K8M890:
 		{
 			viafb_write_reg_mask(CR99, VIACR, 0x03, BIT0 + BIT1);
@@ -856,7 +856,7 @@ static void set_dvi_output_path(int set_iga, int output_interface)
 		break;
 
 	case INTERFACE_DVP1:
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266) {
+		if (viaparinfo->chip_info->name == UNICHROME_CLE266) {
 			if (set_iga == IGA1)
 				viafb_write_reg_mask(CR93, VIACR, 0x21,
 					       BIT0 + BIT5 + BIT7);
@@ -874,7 +874,7 @@ static void set_dvi_output_path(int set_iga, int output_interface)
 		dvi_patch_skew_dvp1();
 		break;
 	case INTERFACE_DFP_HIGH:
-		if (viaparinfo->chip_info->gfx_chip_name != UNICHROME_CLE266) {
+		if (viaparinfo->chip_info->name != UNICHROME_CLE266) {
 			if (set_iga == IGA1) {
 				viafb_write_reg_mask(CR96, VIACR, 0x00, BIT4);
 				viafb_write_reg_mask(CR97, VIACR, 0x03,
@@ -889,7 +889,7 @@ static void set_dvi_output_path(int set_iga, int output_interface)
 		break;
 
 	case INTERFACE_DFP_LOW:
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266)
+		if (viaparinfo->chip_info->name == UNICHROME_CLE266)
 			break;
 
 		if (set_iga == IGA1) {
@@ -988,9 +988,8 @@ static void set_lcd_output_path(int set_iga, int output_interface)
 		break;
 
 	case INTERFACE_DFP:
-		if ((UNICHROME_K8M890 == viaparinfo->chip_info->gfx_chip_name)
-		    || (UNICHROME_P4M890 ==
-		    viaparinfo->chip_info->gfx_chip_name))
+		if ((UNICHROME_K8M890 == viaparinfo->chip_info->name)
+		    || (UNICHROME_P4M890 == viaparinfo->chip_info->name))
 			viafb_write_reg_mask(CR97, VIACR, 0x84,
 				       BIT7 + BIT2 + BIT1 + BIT0);
 		if (set_iga == IGA1) {
@@ -1087,11 +1086,11 @@ static void load_fix_bit_crtc_reg(void)
 	viafb_write_reg(CR14, VIACR, 0x00);
 
 	/* If K8M800, enable Prefetch Mode. */
-	if ((viaparinfo->chip_info->gfx_chip_name == UNICHROME_K800)
-		|| (viaparinfo->chip_info->gfx_chip_name == UNICHROME_K8M890))
+	if ((viaparinfo->chip_info->name == UNICHROME_K800)
+		|| (viaparinfo->chip_info->name == UNICHROME_K8M890))
 		viafb_write_reg_mask(CR33, VIACR, 0x08, BIT3);
-	if ((viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266)
-	    && (viaparinfo->chip_info->gfx_chip_revision == CLE266_REVISION_AX))
+	if ((viaparinfo->chip_info->name == UNICHROME_CLE266)
+	    && (viaparinfo->chip_info->revision == CLE266_REVISION_AX))
 		viafb_write_reg_mask(SR1A, VIASR, 0x02, BIT1);
 
 }
@@ -1210,7 +1209,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 	    0, iga2_fifo_high_threshold = 0, iga2_display_queue_expire_num = 0;
 
 	if (set_iga == IGA1) {
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_K800) {
+		if (viaparinfo->chip_info->name == UNICHROME_K800) {
 			iga1_fifo_max_depth = K800_IGA1_FIFO_MAX_DEPTH;
 			iga1_fifo_threshold = K800_IGA1_FIFO_THRESHOLD;
 			iga1_fifo_high_threshold =
@@ -1225,7 +1224,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 
 		}
 
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_PM800) {
+		if (viaparinfo->chip_info->name == UNICHROME_PM800) {
 			iga1_fifo_max_depth = P880_IGA1_FIFO_MAX_DEPTH;
 			iga1_fifo_threshold = P880_IGA1_FIFO_THRESHOLD;
 			iga1_fifo_high_threshold =
@@ -1242,7 +1241,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 				    P880_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
 		}
 
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CN700) {
+		if (viaparinfo->chip_info->name == UNICHROME_CN700) {
 			iga1_fifo_max_depth = CN700_IGA1_FIFO_MAX_DEPTH;
 			iga1_fifo_threshold = CN700_IGA1_FIFO_THRESHOLD;
 			iga1_fifo_high_threshold =
@@ -1257,7 +1256,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 				    CN700_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
 		}
 
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CX700) {
+		if (viaparinfo->chip_info->name == UNICHROME_CX700) {
 			iga1_fifo_max_depth = CX700_IGA1_FIFO_MAX_DEPTH;
 			iga1_fifo_threshold = CX700_IGA1_FIFO_THRESHOLD;
 			iga1_fifo_high_threshold =
@@ -1266,7 +1265,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 			    CX700_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
 		}
 
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_K8M890) {
+		if (viaparinfo->chip_info->name == UNICHROME_K8M890) {
 			iga1_fifo_max_depth = K8M890_IGA1_FIFO_MAX_DEPTH;
 			iga1_fifo_threshold = K8M890_IGA1_FIFO_THRESHOLD;
 			iga1_fifo_high_threshold =
@@ -1275,7 +1274,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 			    K8M890_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
 		}
 
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_P4M890) {
+		if (viaparinfo->chip_info->name == UNICHROME_P4M890) {
 			iga1_fifo_max_depth = P4M890_IGA1_FIFO_MAX_DEPTH;
 			iga1_fifo_threshold = P4M890_IGA1_FIFO_THRESHOLD;
 			iga1_fifo_high_threshold =
@@ -1284,7 +1283,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 			    P4M890_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
 		}
 
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_P4M900) {
+		if (viaparinfo->chip_info->name == UNICHROME_P4M900) {
 			iga1_fifo_max_depth = P4M900_IGA1_FIFO_MAX_DEPTH;
 			iga1_fifo_threshold = P4M900_IGA1_FIFO_THRESHOLD;
 			iga1_fifo_high_threshold =
@@ -1293,7 +1292,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 			    P4M900_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
 		}
 
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_VX800) {
+		if (viaparinfo->chip_info->name == UNICHROME_VX800) {
 			iga1_fifo_max_depth = VX800_IGA1_FIFO_MAX_DEPTH;
 			iga1_fifo_threshold = VX800_IGA1_FIFO_THRESHOLD;
 			iga1_fifo_high_threshold =
@@ -1302,7 +1301,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 			    VX800_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
 		}
 
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_VX855) {
+		if (viaparinfo->chip_info->name == UNICHROME_VX855) {
 			iga1_fifo_max_depth = VX855_IGA1_FIFO_MAX_DEPTH;
 			iga1_fifo_threshold = VX855_IGA1_FIFO_THRESHOLD;
 			iga1_fifo_high_threshold =
@@ -1352,7 +1351,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 		viafb_load_reg(reg_value, viafb_load_reg_num, reg, VIASR);
 
 	} else {
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_K800) {
+		if (viaparinfo->chip_info->name == UNICHROME_K800) {
 			iga2_fifo_max_depth = K800_IGA2_FIFO_MAX_DEPTH;
 			iga2_fifo_threshold = K800_IGA2_FIFO_THRESHOLD;
 			iga2_fifo_high_threshold =
@@ -1367,7 +1366,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 				    K800_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
 		}
 
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_PM800) {
+		if (viaparinfo->chip_info->name == UNICHROME_PM800) {
 			iga2_fifo_max_depth = P880_IGA2_FIFO_MAX_DEPTH;
 			iga2_fifo_threshold = P880_IGA2_FIFO_THRESHOLD;
 			iga2_fifo_high_threshold =
@@ -1382,7 +1381,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 				    P880_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
 		}
 
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CN700) {
+		if (viaparinfo->chip_info->name == UNICHROME_CN700) {
 			iga2_fifo_max_depth = CN700_IGA2_FIFO_MAX_DEPTH;
 			iga2_fifo_threshold = CN700_IGA2_FIFO_THRESHOLD;
 			iga2_fifo_high_threshold =
@@ -1397,7 +1396,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 				    CN700_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
 		}
 
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CX700) {
+		if (viaparinfo->chip_info->name == UNICHROME_CX700) {
 			iga2_fifo_max_depth = CX700_IGA2_FIFO_MAX_DEPTH;
 			iga2_fifo_threshold = CX700_IGA2_FIFO_THRESHOLD;
 			iga2_fifo_high_threshold =
@@ -1406,7 +1405,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 			    CX700_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
 		}
 
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_K8M890) {
+		if (viaparinfo->chip_info->name == UNICHROME_K8M890) {
 			iga2_fifo_max_depth = K8M890_IGA2_FIFO_MAX_DEPTH;
 			iga2_fifo_threshold = K8M890_IGA2_FIFO_THRESHOLD;
 			iga2_fifo_high_threshold =
@@ -1415,7 +1414,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 			    K8M890_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
 		}
 
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_P4M890) {
+		if (viaparinfo->chip_info->name == UNICHROME_P4M890) {
 			iga2_fifo_max_depth = P4M890_IGA2_FIFO_MAX_DEPTH;
 			iga2_fifo_threshold = P4M890_IGA2_FIFO_THRESHOLD;
 			iga2_fifo_high_threshold =
@@ -1424,7 +1423,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 			    P4M890_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
 		}
 
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_P4M900) {
+		if (viaparinfo->chip_info->name == UNICHROME_P4M900) {
 			iga2_fifo_max_depth = P4M900_IGA2_FIFO_MAX_DEPTH;
 			iga2_fifo_threshold = P4M900_IGA2_FIFO_THRESHOLD;
 			iga2_fifo_high_threshold =
@@ -1433,7 +1432,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 			    P4M900_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
 		}
 
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_VX800) {
+		if (viaparinfo->chip_info->name == UNICHROME_VX800) {
 			iga2_fifo_max_depth = VX800_IGA2_FIFO_MAX_DEPTH;
 			iga2_fifo_threshold = VX800_IGA2_FIFO_THRESHOLD;
 			iga2_fifo_high_threshold =
@@ -1442,7 +1441,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 			    VX800_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
 		}
 
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_VX855) {
+		if (viaparinfo->chip_info->name == UNICHROME_VX855) {
 			iga2_fifo_max_depth = VX855_IGA2_FIFO_MAX_DEPTH;
 			iga2_fifo_threshold = VX855_IGA2_FIFO_THRESHOLD;
 			iga2_fifo_high_threshold =
@@ -1451,7 +1450,7 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
 			    VX855_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
 		}
 
-		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_K800) {
+		if (viaparinfo->chip_info->name == UNICHROME_K800) {
 			/* Set Display FIFO Depath Select */
 			reg_value =
 			    IGA2_FIFO_DEPTH_SELECT_FORMULA(iga2_fifo_max_depth)
@@ -1523,7 +1522,7 @@ u32 viafb_get_clk_value(int clk)
 
 	for (i = 0; i < NUM_TOTAL_PLL_TABLE; i++) {
 		if (clk == pll_value[i].clk) {
-			switch (viaparinfo->chip_info->gfx_chip_name) {
+			switch (viaparinfo->chip_info->name) {
 			case UNICHROME_CLE266:
 			case UNICHROME_K400:
 				return pll_value[i].cle266_pll;
@@ -1559,7 +1558,7 @@ void viafb_set_vclock(u32 CLK, int set_iga)
 
 	if ((set_iga == IGA1) || (set_iga == IGA1_IGA2)) {
 		/* Change D,N FOR VCLK */
-		switch (viaparinfo->chip_info->gfx_chip_name) {
+		switch (viaparinfo->chip_info->name) {
 		case UNICHROME_CLE266:
 		case UNICHROME_K400:
 			viafb_write_reg(SR46, VIASR, CLK / 0x100);
@@ -1588,7 +1587,7 @@ void viafb_set_vclock(u32 CLK, int set_iga)
 
 	if ((set_iga == IGA2) || (set_iga == IGA1_IGA2)) {
 		/* Change D,N FOR LCK */
-		switch (viaparinfo->chip_info->gfx_chip_name) {
+		switch (viaparinfo->chip_info->name) {
 		case UNICHROME_CLE266:
 		case UNICHROME_K400:
 			viafb_write_reg(SR44, VIASR, CLK / 0x100);
@@ -1787,7 +1786,7 @@ void viafb_load_crtc_timing(struct display_timing device_timing,
 				    IGA2_HOR_SYNC_START_FORMULA
 				    (device_timing.hor_sync_start);
 				if (UNICHROME_CN700 <=
-					viaparinfo->chip_info->gfx_chip_name)
+					viaparinfo->chip_info->name)
 					viafb_load_reg_num =
 					    iga2_crtc_reg.hor_sync_start.
 					    reg_num;
@@ -1967,8 +1966,8 @@ void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
 	viafb_load_fetch_count_reg(h_addr, bpp_byte, set_iga);
 
 	/* load FIFO */
-	if ((viaparinfo->chip_info->gfx_chip_name != UNICHROME_CLE266)
-	    && (viaparinfo->chip_info->gfx_chip_name != UNICHROME_K400))
+	if ((viaparinfo->chip_info->name != UNICHROME_CLE266)
+	    && (viaparinfo->chip_info->name != UNICHROME_K400))
 		viafb_load_FIFO_reg(set_iga, h_addr, v_addr);
 
 	/* load SR Register About Memory and Color part */
@@ -2061,40 +2060,35 @@ static void init_gfx_chip_info(struct pci_dev *pdev,
 {
 	u8 tmp;
 
-	viaparinfo->chip_info->gfx_chip_name = pdi->driver_data;
+	viaparinfo->chip_info->name = pdi->driver_data;
 
 	/* Check revision of CLE266 Chip */
-	if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266) {
+	if (viaparinfo->chip_info->name == UNICHROME_CLE266) {
 		/* CR4F only define in CLE266.CX chip */
 		tmp = viafb_read_reg(VIACR, CR4F);
 		viafb_write_reg(CR4F, VIACR, 0x55);
 		if (viafb_read_reg(VIACR, CR4F) != 0x55)
-			viaparinfo->chip_info->gfx_chip_revision =
-			CLE266_REVISION_AX;
+			viaparinfo->chip_info->revision = CLE266_REVISION_AX;
 		else
-			viaparinfo->chip_info->gfx_chip_revision =
-			CLE266_REVISION_CX;
+			viaparinfo->chip_info->revision = CLE266_REVISION_CX;
 		/* restore orignal CR4F value */
 		viafb_write_reg(CR4F, VIACR, tmp);
 	}
 
-	if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CX700) {
+	if (viaparinfo->chip_info->name == UNICHROME_CX700) {
 		tmp = viafb_read_reg(VIASR, SR43);
 		DEBUG_MSG(KERN_INFO "SR43:%X\n", tmp);
 		if (tmp & 0x02) {
-			viaparinfo->chip_info->gfx_chip_revision =
-				CX700_REVISION_700M2;
+			viaparinfo->chip_info->revision = CX700_REVISION_700M2;
 		} else if (tmp & 0x40) {
-			viaparinfo->chip_info->gfx_chip_revision =
-				CX700_REVISION_700M;
+			viaparinfo->chip_info->revision = CX700_REVISION_700M;
 		} else {
-			viaparinfo->chip_info->gfx_chip_revision =
-				CX700_REVISION_700;
+			viaparinfo->chip_info->revision = CX700_REVISION_700;
 		}
 	}
 
 	/* Determine which 2D engine we have */
-	switch (viaparinfo->chip_info->gfx_chip_name) {
+	switch (viaparinfo->chip_info->name) {
 	case UNICHROME_VX800:
 	case UNICHROME_VX855:
 		viaparinfo->chip_info->twod_engine = VIA_2D_ENG_M1;
@@ -2113,9 +2107,8 @@ static void init_tmds_chip_info(void)
 {
 	viafb_tmds_trasmitter_identify();
 
-	if (INTERFACE_NONE == viaparinfo->chip_info->tmds_chip_info.
-		output_interface) {
-		switch (viaparinfo->chip_info->gfx_chip_name) {
+	if (INTERFACE_NONE == viaparinfo->chip_info->tmds.output_interface) {
+		switch (viaparinfo->chip_info->name) {
 		case UNICHROME_CX700:
 			{
 				/* we should check support by hardware layout.*/
@@ -2123,10 +2116,10 @@ static void init_tmds_chip_info(void)
 				     HW_LAYOUT_DVI_ONLY)
 				    || (viafb_display_hardware_layout ==
 					HW_LAYOUT_LCD_DVI)) {
-					viaparinfo->chip_info->tmds_chip_info.
+					viaparinfo->chip_info->tmds.
 					    output_interface = INTERFACE_TMDS;
 				} else {
-					viaparinfo->chip_info->tmds_chip_info.
+					viaparinfo->chip_info->tmds.
 						output_interface =
 						INTERFACE_NONE;
 				}
@@ -2136,20 +2129,20 @@ static void init_tmds_chip_info(void)
 		case UNICHROME_P4M900:
 		case UNICHROME_P4M890:
 			/* TMDS on PCIE, we set DFPLOW as default. */
-			viaparinfo->chip_info->tmds_chip_info.output_interface =
+			viaparinfo->chip_info->tmds.output_interface =
 			    INTERFACE_DFP_LOW;
 			break;
 		default:
 			{
 				/* set DVP1 default for DVI */
-				viaparinfo->chip_info->tmds_chip_info
+				viaparinfo->chip_info->tmds
 				.output_interface = INTERFACE_DVP1;
 			}
 		}
 	}
 
 	DEBUG_MSG(KERN_INFO "TMDS Chip = %d\n",
-		  viaparinfo->chip_info->tmds_chip_info.tmds_chip_name);
+		  viaparinfo->chip_info->tmds.name);
 	viaparinfo->tmds_setting_info->get_dvi_size_method =
 		GET_DVI_SIZE_BY_VGA_BIOS;
 	viafb_init_dvi_size();
@@ -2166,34 +2159,31 @@ static void init_lvds_chip_info(void)
 
 	viafb_lvds_trasmitter_identify();
 	viafb_init_lcd_size();
-	viafb_init_lvds_output_interface(&viaparinfo->chip_info->lvds_chip_info,
+	viafb_init_lvds_output_interface(&viaparinfo->chip_info->lvds,
 				   viaparinfo->lvds_setting_info);
-	if (viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name) {
-		viafb_init_lvds_output_interface(&viaparinfo->chip_info->
-			lvds_chip_info2, viaparinfo->lvds_setting_info2);
+	if (viaparinfo->chip_info->lvds2.name) {
+		viafb_init_lvds_output_interface(&viaparinfo->chip_info->lvds2,
+						viaparinfo->lvds_setting_info2);
 	}
 	/*If CX700,two singel LCD, we need to reassign
 	   LCD interface to different LVDS port */
-	if ((UNICHROME_CX700 == viaparinfo->chip_info->gfx_chip_name)
+	if ((UNICHROME_CX700 == viaparinfo->chip_info->name)
 	    && (HW_LAYOUT_LCD1_LCD2 == viafb_display_hardware_layout)) {
-		if ((INTEGRATED_LVDS == viaparinfo->chip_info->lvds_chip_info.
-			lvds_chip_name) && (INTEGRATED_LVDS ==
-			viaparinfo->chip_info->
-			lvds_chip_info2.lvds_chip_name)) {
-			viaparinfo->chip_info->lvds_chip_info.output_interface =
+		if ((INTEGRATED_LVDS == viaparinfo->chip_info->lvds.name) &&
+		    (INTEGRATED_LVDS == viaparinfo->chip_info->lvds2.name)) {
+			viaparinfo->chip_info->lvds.output_interface =
 				INTERFACE_LVDS0;
-			viaparinfo->chip_info->lvds_chip_info2.
-				output_interface =
+			viaparinfo->chip_info->lvds2.output_interface =
 			    INTERFACE_LVDS1;
 		}
 	}
 
 	DEBUG_MSG(KERN_INFO "LVDS Chip = %d\n",
-		  viaparinfo->chip_info->lvds_chip_info.lvds_chip_name);
+		  viaparinfo->chip_info->lvds.name);
 	DEBUG_MSG(KERN_INFO "LVDS1 output_interface = %d\n",
-		  viaparinfo->chip_info->lvds_chip_info.output_interface);
+		  viaparinfo->chip_info->lvds.output_interface);
 	DEBUG_MSG(KERN_INFO "LVDS2 output_interface = %d\n",
-		  viaparinfo->chip_info->lvds_chip_info.output_interface);
+		  viaparinfo->chip_info->lvds.output_interface);
 }
 
 void viafb_init_dac(int set_iga)
@@ -2298,7 +2288,7 @@ int viafb_setmode(int vmode_index, int hor_res, int ver_res, int video_bpp,
 	outb(0x00, VIAAR);
 
 	/* Write Common Setting for Video Mode */
-	switch (viaparinfo->chip_info->gfx_chip_name) {
+	switch (viaparinfo->chip_info->name) {
 	case UNICHROME_CLE266:
 		viafb_write_regx(CLE266_ModeXregs, NUM_TOTAL_CLE266_ModeXregs);
 		break;
@@ -2368,8 +2358,8 @@ int viafb_setmode(int vmode_index, int hor_res, int ver_res, int video_bpp,
 
 	/* Update Patch Register */
 
-	if ((viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266)
-	    || (viaparinfo->chip_info->gfx_chip_name == UNICHROME_K400)) {
+	if ((viaparinfo->chip_info->name == UNICHROME_CLE266)
+	    || (viaparinfo->chip_info->name == UNICHROME_K400)) {
 		for (i = 0; i < NUM_TOTAL_PATCH_MODE; i++) {
 			if (res_patch_table[i].mode_index == vmode_index) {
 				for (j = 0;
@@ -2394,9 +2384,8 @@ int viafb_setmode(int vmode_index, int hor_res, int ver_res, int video_bpp,
 	}
 
 	if (viafb_SAMM_ON == 1) {
-		if ((viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266)
-		    || (viaparinfo->chip_info->gfx_chip_name ==
-		    UNICHROME_K400)) {
+		if ((viaparinfo->chip_info->name == UNICHROME_CLE266)
+		    || (viaparinfo->chip_info->name == UNICHROME_K400)) {
 			for (i = 0; i < NUM_TOTAL_PATCH_MODE; i++) {
 				if (res_patch_table[i].mode_index ==
 				    vmode_index1) {
@@ -2479,7 +2468,7 @@ int viafb_setmode(int vmode_index, int hor_res, int ver_res, int video_bpp,
 			viaparinfo->lvds_setting_info->bpp = video_bpp1;
 			viafb_lcd_set_mode(crt_timing1, viaparinfo->
 				lvds_setting_info,
-				     &viaparinfo->chip_info->lvds_chip_info);
+				     &viaparinfo->chip_info->lvds);
 		} else {
 			/* IGA1 doesn't have LCD scaling, so set it center. */
 			if (viaparinfo->lvds_setting_info->iga_path == IGA1) {
@@ -2489,7 +2478,7 @@ int viafb_setmode(int vmode_index, int hor_res, int ver_res, int video_bpp,
 			viaparinfo->lvds_setting_info->bpp = video_bpp;
 			viafb_lcd_set_mode(crt_timing, viaparinfo->
 				lvds_setting_info,
-				     &viaparinfo->chip_info->lvds_chip_info);
+				     &viaparinfo->chip_info->lvds);
 		}
 	}
 	if (viafb_LCD2_ON) {
@@ -2498,7 +2487,7 @@ int viafb_setmode(int vmode_index, int hor_res, int ver_res, int video_bpp,
 			viaparinfo->lvds_setting_info2->bpp = video_bpp1;
 			viafb_lcd_set_mode(crt_timing1, viaparinfo->
 				lvds_setting_info2,
-				     &viaparinfo->chip_info->lvds_chip_info2);
+				     &viaparinfo->chip_info->lvds2);
 		} else {
 			/* IGA1 doesn't have LCD scaling, so set it center. */
 			if (viaparinfo->lvds_setting_info2->iga_path == IGA1) {
@@ -2508,11 +2497,11 @@ int viafb_setmode(int vmode_index, int hor_res, int ver_res, int video_bpp,
 			viaparinfo->lvds_setting_info2->bpp = video_bpp;
 			viafb_lcd_set_mode(crt_timing, viaparinfo->
 				lvds_setting_info2,
-				     &viaparinfo->chip_info->lvds_chip_info2);
+				     &viaparinfo->chip_info->lvds2);
 		}
 	}
 
-	if ((viaparinfo->chip_info->gfx_chip_name == UNICHROME_CX700)
+	if ((viaparinfo->chip_info->name == UNICHROME_CX700)
 	    && (viafb_LCD_ON || viafb_DVI_ON))
 		set_display_channel();
 
@@ -2674,7 +2663,7 @@ int viafb_get_fb_size_from_pci(void)
 	FBSize = FBSize & 0x00007000;
 	DEBUG_MSG(KERN_INFO "FB Size = %x\n", FBSize);
 
-	if (viaparinfo->chip_info->gfx_chip_name < UNICHROME_CX700) {
+	if (viaparinfo->chip_info->name < UNICHROME_CX700) {
 		switch (FBSize) {
 		case 0x00004000:
 			VideoMemSize = (16 << 20);	/*16M */

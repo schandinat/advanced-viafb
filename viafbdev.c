@@ -276,7 +276,7 @@ unsigned blue, unsigned transp, struct fb_info *info)
 	DEBUG_MSG(KERN_INFO "viafb_setcolreg!\n");
 	if (regno >= cmap_entries)
 		return 1;
-	if (UNICHROME_CLE266 == viaparinfo->chip_info->gfx_chip_name) {
+	if (UNICHROME_CLE266 == viaparinfo->chip_info->name) {
 		/*
 		 * Read PCI bus 0,dev 0,function 0,index 0xF6 to get chip rev.
 		 */
@@ -315,7 +315,7 @@ unsigned blue, unsigned transp, struct fb_info *info)
 		outb(0xFF, 0x3c6);
 		/* Write one register of IGA2 */
 		outb(regno, 0x3C8);
-		if (UNICHROME_CLE266 == viaparinfo->chip_info->gfx_chip_name &&
+		if (UNICHROME_CLE266 == viaparinfo->chip_info->name &&
 			rev >= 15) {
 			shift = 8;
 			viafb_write_reg_mask(CR6A, VIACR, BIT5, BIT5);
@@ -380,7 +380,7 @@ static int viafb_setcmap(struct fb_cmap *cmap, struct fb_info *info)
 	u8 sr1a, sr1b, cr67, cr6a, rev = 0, shift = 10;
 	if (len > 256)
 		return 1;
-	if (UNICHROME_CLE266 == viaparinfo->chip_info->gfx_chip_name) {
+	if (UNICHROME_CLE266 == viaparinfo->chip_info->name) {
 		/*
 		 * Read PCI bus 0, dev 0, function 0, index 0xF6 to get chip
 		 * rev.
@@ -418,7 +418,7 @@ static int viafb_setcmap(struct fb_cmap *cmap, struct fb_info *info)
 		/* Bit mask of palette */
 		outb(0xFF, 0x3c6);
 		outb(0x00, 0x3C8);
-		if (UNICHROME_CLE266 == viaparinfo->chip_info->gfx_chip_name &&
+		if (UNICHROME_CLE266 == viaparinfo->chip_info->name &&
 			rev >= 15) {
 			shift = 8;
 			viafb_write_reg_mask(CR6A, VIACR, BIT5, BIT5);
@@ -1020,7 +1020,7 @@ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
 	}
 
 	if ((((struct viafb_par *)(info->par))->iga_path == IGA2)
-	    && (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266))
+	    && (viaparinfo->chip_info->name == UNICHROME_CLE266))
 		return -ENODEV;
 
 	/* When duoview and using lcd , use soft cursor */
@@ -1102,12 +1102,9 @@ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
 			return 0;
 		p_viafb_par = (struct viafb_par *)info->par;
 
-		if ((p_viafb_par->chip_info->gfx_chip_name ==
-			UNICHROME_CX700) ||
-			(p_viafb_par->chip_info->gfx_chip_name ==
-			UNICHROME_VX800) ||
-			((p_viafb_par->chip_info->gfx_chip_name ==
-			UNICHROME_VX855))) {
+		if ((p_viafb_par->chip_info->name == UNICHROME_CX700) ||
+			(p_viafb_par->chip_info->name == UNICHROME_VX800) ||
+			((p_viafb_par->chip_info->name == UNICHROME_VX855))) {
 			bg_col =
 			    (((info->cmap.red)[viacursor.image.bg_color] &
 			    0xFFC0) << 14) |
@@ -1678,25 +1675,22 @@ static int parse_port(char *opt_str, int *output_interface)
 
 static void parse_lcd_port(void)
 {
-	parse_port(viafb_lcd_port, &viaparinfo->chip_info->lvds_chip_info.
+	parse_port(viafb_lcd_port, &viaparinfo->chip_info->lvds.
 		output_interface);
 	/*Initialize to avoid unexpected behavior */
-	viaparinfo->chip_info->lvds_chip_info2.output_interface =
-	INTERFACE_NONE;
+	viaparinfo->chip_info->lvds2.output_interface = INTERFACE_NONE;
 
 	DEBUG_MSG(KERN_INFO "parse_lcd_port: viafb_lcd_port:%s,interface:%d\n",
-		  viafb_lcd_port, viaparinfo->chip_info->lvds_chip_info.
-		  output_interface);
+		  viafb_lcd_port, viaparinfo->chip_info->lvds.output_interface);
 }
 
 static void parse_dvi_port(void)
 {
-	parse_port(viafb_dvi_port, &viaparinfo->chip_info->tmds_chip_info.
+	parse_port(viafb_dvi_port, &viaparinfo->chip_info->tmds.
 		output_interface);
 
 	DEBUG_MSG(KERN_INFO "parse_dvi_port: viafb_dvi_port:%s,interface:%d\n",
-		  viafb_dvi_port, viaparinfo->chip_info->tmds_chip_info.
-		  output_interface);
+		  viafb_dvi_port, viaparinfo->chip_info->tmds.output_interface);
 }
 
 /*
@@ -1877,27 +1871,27 @@ static int viafb_vt1636_proc_read(char *buf, char **start,
 {
 	int len = 0;
 	u8 vt1636_08 = 0, vt1636_09 = 0;
-	switch (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
+	switch (viaparinfo->chip_info->lvds.name) {
 	case VT1636_LVDS:
 		vt1636_08 =
 		    viafb_gpio_i2c_read_lvds(viaparinfo->lvds_setting_info,
-		    &viaparinfo->chip_info->lvds_chip_info, 0x08) & 0x0f;
+		    &viaparinfo->chip_info->lvds, 0x08) & 0x0f;
 		vt1636_09 =
 		    viafb_gpio_i2c_read_lvds(viaparinfo->lvds_setting_info,
-		    &viaparinfo->chip_info->lvds_chip_info, 0x09) & 0x1f;
+		    &viaparinfo->chip_info->lvds, 0x09) & 0x1f;
 		len += sprintf(buf + len, "%x %x\n", vt1636_08, vt1636_09);
 		break;
 	default:
 		break;
 	}
-	switch (viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name) {
+	switch (viaparinfo->chip_info->lvds2.name) {
 	case VT1636_LVDS:
 		vt1636_08 =
 		    viafb_gpio_i2c_read_lvds(viaparinfo->lvds_setting_info2,
-			&viaparinfo->chip_info->lvds_chip_info2, 0x08) & 0x0f;
+			&viaparinfo->chip_info->lvds2, 0x08) & 0x0f;
 		vt1636_09 =
 		    viafb_gpio_i2c_read_lvds(viaparinfo->lvds_setting_info2,
-			&viaparinfo->chip_info->lvds_chip_info2, 0x09) & 0x1f;
+			&viaparinfo->chip_info->lvds2, 0x09) & 0x1f;
 		len += sprintf(buf + len, " %x %x\n", vt1636_08, vt1636_09);
 		break;
 	default:
@@ -1919,7 +1913,7 @@ static int viafb_vt1636_proc_write(struct file *file,
 		return -EFAULT;
 	buf[length - 1] = '\0';	/*Ensure end string */
 	pbuf = &buf[0];
-	switch (viaparinfo->chip_info->lvds_chip_info.lvds_chip_name) {
+	switch (viaparinfo->chip_info->lvds.name) {
 	case VT1636_LVDS:
 		for (i = 0; i < 2; i++) {
 			value = strsep(&pbuf, " ");
@@ -1933,8 +1927,7 @@ static int viafb_vt1636_proc_write(struct file *file,
 					viafb_gpio_i2c_write_mask_lvds
 					    (viaparinfo->lvds_setting_info,
 					    &viaparinfo->
-					    chip_info->lvds_chip_info,
-					     reg_val);
+					    chip_info->lvds, reg_val);
 					break;
 				case 1:
 					reg_val.Index = 0x09;
@@ -1942,8 +1935,7 @@ static int viafb_vt1636_proc_write(struct file *file,
 					viafb_gpio_i2c_write_mask_lvds
 					    (viaparinfo->lvds_setting_info,
 					    &viaparinfo->
-					    chip_info->lvds_chip_info,
-					     reg_val);
+					    chip_info->lvds, reg_val);
 					break;
 				default:
 					break;
@@ -1956,7 +1948,7 @@ static int viafb_vt1636_proc_write(struct file *file,
 	default:
 		break;
 	}
-	switch (viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name) {
+	switch (viaparinfo->chip_info->lvds2.name) {
 	case VT1636_LVDS:
 		for (i = 0; i < 2; i++) {
 			value = strsep(&pbuf, " ");
@@ -1970,8 +1962,7 @@ static int viafb_vt1636_proc_write(struct file *file,
 					viafb_gpio_i2c_write_mask_lvds
 					    (viaparinfo->lvds_setting_info2,
 					    &viaparinfo->
-					    chip_info->lvds_chip_info2,
-					     reg_val);
+					    chip_info->lvds2, reg_val);
 					break;
 				case 1:
 					reg_val.Index = 0x09;
@@ -1979,8 +1970,7 @@ static int viafb_vt1636_proc_write(struct file *file,
 					viafb_gpio_i2c_write_mask_lvds
 					    (viaparinfo->lvds_setting_info2,
 					    &viaparinfo->
-					    chip_info->lvds_chip_info2,
-					     reg_val);
+					    chip_info->lvds2, reg_val);
 					break;
 				default:
 					break;
@@ -2021,9 +2011,8 @@ static void viafb_init_proc(struct proc_dir_entry **viafb_entry)
 			entry->read_proc = viafb_dfpl_proc_read;
 			entry->write_proc = viafb_dfpl_proc_write;
 		}
-		if (VT1636_LVDS == viaparinfo->chip_info->lvds_chip_info.
-			lvds_chip_name || VT1636_LVDS ==
-		    viaparinfo->chip_info->lvds_chip_info2.lvds_chip_name) {
+		if (VT1636_LVDS == viaparinfo->chip_info->lvds.name ||
+		    VT1636_LVDS == viaparinfo->chip_info->lvds2.name) {
 			entry = create_proc_entry("vt1636", 0, *viafb_entry);
 			if (entry) {
 				entry->read_proc = viafb_vt1636_proc_read;
@@ -2300,7 +2289,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 		goto out_fb1_release;
 
 	if (viafb_dual_fb && (viafb_primary_dev == LCD_Device)
-	    && (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266)) {
+	    && (viaparinfo->chip_info->name == UNICHROME_CLE266)) {
 		rc = register_framebuffer(viafbinfo1);
 		if (rc)
 			goto out_dealloc_cmap;
@@ -2310,8 +2299,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 		goto out_fb1_unreg_lcd_cle266;
 
 	if (viafb_dual_fb && ((viafb_primary_dev != LCD_Device)
-			|| (viaparinfo->chip_info->gfx_chip_name !=
-			UNICHROME_CLE266))) {
+			|| (viaparinfo->chip_info->name != UNICHROME_CLE266))) {
 		rc = register_framebuffer(viafbinfo1);
 		if (rc)
 			goto out_fb_unreg;
@@ -2328,7 +2316,7 @@ out_fb_unreg:
 	unregister_framebuffer(viafbinfo);
 out_fb1_unreg_lcd_cle266:
 	if (viafb_dual_fb && (viafb_primary_dev == LCD_Device)
-            && (viaparinfo->chip_info->gfx_chip_name == UNICHROME_CLE266))
+            && (viaparinfo->chip_info->name == UNICHROME_CLE266))
 		unregister_framebuffer(viafbinfo1);
 out_dealloc_cmap:
 	fb_dealloc_cmap(&viafbinfo->cmap);
