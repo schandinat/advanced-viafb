@@ -1117,22 +1117,14 @@ static void integrated_lvds_disable(struct lvds_setting_information
 	/* Power off LVDS channel. */
 	switch (plvds_chip_info->output_interface) {
 	case INTERFACE_LVDS0:
-		{
-			viafb_write_reg_mask(CRD2, VIACR, 0x80, BIT7);
-			break;
-		}
-
+		viafb_write_reg_mask(CRD2, VIACR, 0x80, BIT7);
+		break;
 	case INTERFACE_LVDS1:
-		{
-			viafb_write_reg_mask(CRD2, VIACR, 0x40, BIT6);
-			break;
-		}
-
+		viafb_write_reg_mask(CRD2, VIACR, 0x40, BIT6);
+		break;
 	case INTERFACE_LVDS0LVDS1:
-		{
-			viafb_write_reg_mask(CRD2, VIACR, 0xC0, BIT6 + BIT7);
-			break;
-		}
+		viafb_write_reg_mask(CRD2, VIACR, 0xC0, BIT6 + BIT7);
+		break;
 	}
 }
 
@@ -1187,22 +1179,14 @@ static void integrated_lvds_enable(struct lvds_setting_information
 	/* Power on LVDS channel. */
 	switch (plvds_chip_info->output_interface) {
 	case INTERFACE_LVDS0:
-		{
-			viafb_write_reg_mask(CRD2, VIACR, 0, BIT7);
-			break;
-		}
-
+		viafb_write_reg_mask(CRD2, VIACR, 0, BIT7);
+		break;
 	case INTERFACE_LVDS1:
-		{
-			viafb_write_reg_mask(CRD2, VIACR, 0, BIT6);
-			break;
-		}
-
+		viafb_write_reg_mask(CRD2, VIACR, 0, BIT6);
+		break;
 	case INTERFACE_LVDS0LVDS1:
-		{
-			viafb_write_reg_mask(CRD2, VIACR, 0, BIT6 + BIT7);
-			break;
-		}
+		viafb_write_reg_mask(CRD2, VIACR, 0, BIT6 + BIT7);
+		break;
 	}
 }
 
@@ -1365,43 +1349,25 @@ static void check_diport_of_integrated_lvds(
 	/* Determine LCD DI Port by hardware layout. */
 	switch (viafb_display_hardware_layout) {
 	case HW_LAYOUT_LCD_ONLY:
-		{
-			if (plvds_setting_info->device_lcd_dualedge) {
-				plvds_chip_info->output_interface =
-				    INTERFACE_LVDS0LVDS1;
-			} else {
-				plvds_chip_info->output_interface =
-				    INTERFACE_LVDS0;
-			}
-
-			break;
-		}
-
+		if (plvds_setting_info->device_lcd_dualedge)
+			plvds_chip_info->output_interface =
+							INTERFACE_LVDS0LVDS1;
+		else
+			plvds_chip_info->output_interface = INTERFACE_LVDS0;
+		break;
 	case HW_LAYOUT_DVI_ONLY:
-		{
-			plvds_chip_info->output_interface = INTERFACE_NONE;
-			break;
-		}
-
+		plvds_chip_info->output_interface = INTERFACE_NONE;
+		break;
 	case HW_LAYOUT_LCD1_LCD2:
 	case HW_LAYOUT_LCD_EXTERNAL_LCD2:
-		{
-			plvds_chip_info->output_interface =
-			    INTERFACE_LVDS0LVDS1;
-			break;
-		}
-
+		plvds_chip_info->output_interface = INTERFACE_LVDS0LVDS1;
+		break;
 	case HW_LAYOUT_LCD_DVI:
-		{
-			plvds_chip_info->output_interface = INTERFACE_LVDS1;
-			break;
-		}
-
+		plvds_chip_info->output_interface = INTERFACE_LVDS1;
+		break;
 	default:
-		{
-			plvds_chip_info->output_interface = INTERFACE_LVDS1;
-			break;
-		}
+		plvds_chip_info->output_interface = INTERFACE_LVDS1;
+		break;
 	}
 
 	DEBUG_MSG(KERN_INFO

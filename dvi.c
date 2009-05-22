@@ -570,26 +570,29 @@ static unsigned char dvi_get_panel_info(void)
 /* If Disable DVI, turn off pad */
 void viafb_dvi_disable(void)
 {
-	if (viaparinfo->chip_info->tmds.output_interface == INTERFACE_DVP0)
+	switch (viaparinfo->chip_info->tmds.output_interface) {
+	case INTERFACE_DVP0:
 		viafb_write_reg(SR1E, VIASR,
-		viafb_read_reg(VIASR, SR1E) & (~0xC0));
-
-	if (viaparinfo->chip_info->tmds.output_interface == INTERFACE_DVP1)
+				viafb_read_reg(VIASR, SR1E) & (~0xC0));
+		break;
+	case INTERFACE_DVP1:
 		viafb_write_reg(SR1E, VIASR,
-		viafb_read_reg(VIASR, SR1E) & (~0x30));
-
-	if (viaparinfo->chip_info->tmds.output_interface == INTERFACE_DFP_HIGH)
+				viafb_read_reg(VIASR, SR1E) & (~0x30));
+		break;
+	case INTERFACE_DFP_HIGH:
 		viafb_write_reg(SR2A, VIASR,
-		viafb_read_reg(VIASR, SR2A) & (~0x0C));
-
-	if (viaparinfo->chip_info->tmds.output_interface == INTERFACE_DFP_LOW)
+				viafb_read_reg(VIASR, SR2A) & (~0x0C));
+		break;
+	case INTERFACE_DFP_LOW:
 		viafb_write_reg(SR2A, VIASR,
-		viafb_read_reg(VIASR, SR2A) & (~0x03));
-
-	if (viaparinfo->chip_info->tmds.output_interface == INTERFACE_TMDS)
+				viafb_read_reg(VIASR, SR2A) & (~0x03));
+		break;
+	case INTERFACE_TMDS:
 		/* Turn off TMDS power. */
 		viafb_write_reg(CRD2, VIACR,
-		viafb_read_reg(VIACR, CRD2) | 0x08);
+				viafb_read_reg(VIACR, CRD2) | 0x08);
+		break;
+	}
 }
 
 /* If Enable DVI, turn off pad */
@@ -597,31 +600,30 @@ void viafb_dvi_enable(void)
 {
 	u8 data;
 
-	if (viaparinfo->chip_info->tmds.output_interface == INTERFACE_DVP0) {
+	switch (viaparinfo->chip_info->tmds.output_interface) {
+	case INTERFACE_DVP0:
 		viafb_write_reg(SR1E, VIASR,
-			viafb_read_reg(VIASR, SR1E) | 0xC0);
+				viafb_read_reg(VIASR, SR1E) | 0xC0);
 		if (viaparinfo->chip_info->name == UNICHROME_CLE266)
 			tmds_register_write(0x88, 0x3b);
 		else
 			/*clear CR91[5] to direct on display period
 			   in the secondary diplay path */
 			viafb_write_reg(CR91, VIACR,
-			viafb_read_reg(VIACR, CR91) & 0xDF);
-	}
-
-	if (viaparinfo->chip_info->tmds.output_interface == INTERFACE_DVP1) {
+					viafb_read_reg(VIACR, CR91) & 0xDF);
+		break;
+	case INTERFACE_DVP1:
 		viafb_write_reg(SR1E, VIASR,
-			viafb_read_reg(VIASR, SR1E) | 0x30);
+				viafb_read_reg(VIASR, SR1E) | 0x30);
 
 		/*fix dvi cann't be enabled with MB VT5718C4 - Al Zhang */
-		if (viaparinfo->chip_info->name == UNICHROME_CLE266) {
+		if (viaparinfo->chip_info->name == UNICHROME_CLE266)
 			tmds_register_write(0x88, 0x3b);
-		} else {
+		else
 			/*clear CR91[5] to direct on display period
 			  in the secondary diplay path */
 			viafb_write_reg(CR91, VIACR,
-			viafb_read_reg(VIACR, CR91) & 0xDF);
-		}
+					viafb_read_reg(VIACR, CR91) & 0xDF);
 
 		/*fix DVI cannot enable on EPIA-M board */
 		if (viafb_platform_epia_dvi == 1) {
@@ -637,30 +639,26 @@ void viafb_dvi_enable(void)
 					     0x08, data);
 			}
 		}
-	}
-
-	if (viaparinfo->chip_info->tmds.output_interface == 
-						INTERFACE_DFP_HIGH) {
+		break;
+	case INTERFACE_DFP_HIGH:
 		viafb_write_reg(SR2A, VIASR,
-			viafb_read_reg(VIASR, SR2A) | 0x0C);
+				viafb_read_reg(VIASR, SR2A) | 0x0C);
 		viafb_write_reg(CR91, VIACR,
-			viafb_read_reg(VIACR, CR91) & 0xDF);
-	}
-
-	if (viaparinfo->chip_info->tmds.output_interface ==
-						INTERFACE_DFP_LOW) {
+				viafb_read_reg(VIACR, CR91) & 0xDF);
+		break;
+	case INTERFACE_DFP_LOW:
 		viafb_write_reg(SR2A, VIASR,
-			viafb_read_reg(VIASR, SR2A) | 0x03);
+				viafb_read_reg(VIASR, SR2A) | 0x03);
 		viafb_write_reg(CR91, VIACR,
-			viafb_read_reg(VIACR, CR91) & 0xDF);
-	}
-	if (viaparinfo->chip_info->tmds.output_interface ==
-						INTERFACE_TMDS) {
+				viafb_read_reg(VIACR, CR91) & 0xDF);
+		break;
+	case INTERFACE_TMDS:
 		/* Turn on Display period in the panel path. */
 		viafb_write_reg_mask(CR91, VIACR, 0, BIT7);
 
 		/* Turn on TMDS power. */
 		viafb_write_reg_mask(CRD2, VIACR, 0, BIT3);
+		break;
 	}
 }
 
