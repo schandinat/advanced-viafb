@@ -132,7 +132,6 @@ enum via_2d_engine {
 struct chip_information {
 	int gfx_chip_name;
 	int gfx_chip_revision;
-	int chip_on_slot;
 	enum via_2d_engine twod_engine;
 	struct tmds_chip_information tmds_chip_info;
 	struct lvds_chip_information lvds_chip_info;
