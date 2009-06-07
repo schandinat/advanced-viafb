@@ -132,6 +132,8 @@ extern struct crt_mode_table CRTM1088x612[1];
 extern struct crt_mode_table CRTM1152x720[1];
 /* 1200x720 (GTF) */
 extern struct crt_mode_table CRTM1200x720[1];
+/* 1200x900 (DCON) */
+extern struct crt_mode_table DCON1200x900[1];
 /* 1280x600 (GTF) */
 extern struct crt_mode_table CRTM1280x600[1];
 /* 1360x768 (CVT) */
@@ -160,12 +162,12 @@ extern struct crt_mode_table CRTM1920x1200[1];
 extern struct crt_mode_table CRTM1920x1200_RB[1];
 /* 2048x1536 (CVT) */
 extern struct crt_mode_table CRTM2048x1536[1];
-extern struct VideoModeTable CLE266Modes[47];
+extern struct VideoModeTable CLE266Modes[48];
 extern struct crt_mode_table CEAM1280x720[1];
 extern struct crt_mode_table CEAM1920x1080[1];
 extern struct VideoModeTable CEA_HDMI_Modes[2];
 
-extern struct res_map_refresh res_map_refresh_tbl[61];
+extern struct res_map_refresh res_map_refresh_tbl[62];
 extern struct io_reg CN400_ModeXregs[52];
 extern struct io_reg CN700_ModeXregs[66];
 extern struct io_reg KM400_ModeXregs[55];

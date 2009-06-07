@@ -445,6 +445,16 @@ static int fp_id_to_vindex(int panel_id)
 		viaparinfo->lvds_setting_info->LCDDithering = 1;
 		return VIA_RES_480X640;
 		break;
+	case 0x17:
+		/* OLPC XO-1.5 panel */
+		viaparinfo->lvds_setting_info->lcd_panel_hres = 1200;
+		viaparinfo->lvds_setting_info->lcd_panel_vres = 900;
+		viaparinfo->lvds_setting_info->lcd_panel_id =
+			LCD_PANEL_IDD_1200X900;
+		viaparinfo->lvds_setting_info->device_lcd_dualedge = 0;
+		viaparinfo->lvds_setting_info->LCDDithering = 0;
+		return VIA_RES_1200X900;
+		break;
 	default:
 		viaparinfo->lvds_setting_info->lcd_panel_hres = 800;
 		viaparinfo->lvds_setting_info->lcd_panel_vres = 600;
