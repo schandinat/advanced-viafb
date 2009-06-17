@@ -188,8 +188,8 @@
 #define CR09    0x09
 #define CR0A    0x0A
 #define CR0B    0x0B
-#define CR0C    0x0C
-#define CR0D    0x0D
+//#define CR0C    0x0C
+//#define CR0D    0x0D
 #define CR0E    0x0E
 #define CR0F    0x0F
 #define CR10    0x10
@@ -207,7 +207,7 @@
 #define CR31    0x31
 #define CR32    0x32
 #define CR33    0x33
-#define CR34    0x34
+//#define CR34    0x34
 #define CR35    0x35
 #define CR36    0x36
 #define CR37    0x37
@@ -227,7 +227,7 @@
 #define CR45    0x45
 #define CR46    0x46
 #define CR47    0x47
-#define CR48    0x48
+//#define CR48    0x48
 #define CR49    0x49
 #define CR4A    0x4A
 #define CR4B    0x4B
@@ -253,9 +253,9 @@
 #define CR5F    0x5F
 #define CR60    0x60
 #define CR61    0x61
-#define CR62    0x62
-#define CR63    0x63
-#define CR64    0x64
+//#define CR62    0x62
+//#define CR63    0x63
+//#define CR64    0x64
 #define CR65    0x65
 #define CR66    0x66
 #define CR67    0x67
@@ -318,7 +318,7 @@
 #define CRA0    0xA0
 #define CRA1    0xA1
 #define CRA2    0xA2
-#define CRA3    0xA3
+//#define CRA3    0xA3
 #define CRD2    0xD2
 #define CRD3    0xD3
 #define CRD4    0xD4
