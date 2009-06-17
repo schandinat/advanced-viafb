@@ -28,7 +28,7 @@ int viafb_ioctl_get_viafb_info(u_long arg)
 	viainfo.viafb_id = VIAID;
 	viainfo.vendor_id = PCI_VIA_VENDOR_ID;
 
-	switch (viaparinfo->chip_info->name) {
+	switch (viaparinfo->shared->chip_info.name) {
 	case UNICHROME_CLE266:
 		viainfo.device_id = UNICHROME_CLE266_DID;
 		break;
@@ -81,7 +81,7 @@ int viafb_ioctl_hotplug(int hres, int vres, int bpp)
 	int DVIsense, status = 0;
 	DEBUG_MSG(KERN_INFO "viafb_ioctl_hotplug!!\n");
 
-	if (viaparinfo->chip_info->tmds.name != NON_TMDS_TRANSMITTER) {
+	if (viaparinfo->shared->chip_info.tmds.name != NON_TMDS_TRANSMITTER) {
 		DVIsense = viafb_dvi_sense();
 
 		if (DVIsense) {

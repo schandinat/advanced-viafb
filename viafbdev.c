@@ -284,7 +284,7 @@ unsigned blue, unsigned transp, struct fb_info *info)
 	DEBUG_MSG(KERN_INFO "viafb_setcolreg!\n");
 	if (regno >= cmap_entries)
 		return 1;
-	if (UNICHROME_CLE266 == viaparinfo->chip_info->name) {
+	if (UNICHROME_CLE266 == viaparinfo->shared->chip_info.name) {
 		/*
 		 * Read PCI bus 0,dev 0,function 0,index 0xF6 to get chip rev.
 		 */
@@ -323,7 +323,7 @@ unsigned blue, unsigned transp, struct fb_info *info)
 		outb(0xFF, 0x3c6);
 		/* Write one register of IGA2 */
 		outb(regno, 0x3C8);
-		if (UNICHROME_CLE266 == viaparinfo->chip_info->name &&
+		if (UNICHROME_CLE266 == viaparinfo->shared->chip_info.name &&
 			rev >= 15) {
 			shift = 8;
 			viafb_write_reg_mask(CR6A, VIACR, BIT5, BIT5);
@@ -388,7 +388,7 @@ static int viafb_setcmap(struct fb_cmap *cmap, struct fb_info *info)
 	u8 sr1a, sr1b, cr67, cr6a, rev = 0, shift = 10;
 	if (len > 256)
 		return 1;
-	if (UNICHROME_CLE266 == viaparinfo->chip_info->name) {
+	if (UNICHROME_CLE266 == viaparinfo->shared->chip_info.name) {
 		/*
 		 * Read PCI bus 0, dev 0, function 0, index 0xF6 to get chip
 		 * rev.
@@ -426,7 +426,7 @@ static int viafb_setcmap(struct fb_cmap *cmap, struct fb_info *info)
 		/* Bit mask of palette */
 		outb(0xFF, 0x3c6);
 		outb(0x00, 0x3C8);
-		if (UNICHROME_CLE266 == viaparinfo->chip_info->name &&
+		if (UNICHROME_CLE266 == viaparinfo->shared->chip_info.name &&
 			rev >= 15) {
 			shift = 8;
 			viafb_write_reg_mask(CR6A, VIACR, BIT5, BIT5);
@@ -570,7 +570,7 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
 
 	switch (cmd) {
 	case VIAFB_GET_CHIP_INFO:
-		if (copy_to_user(argp, viaparinfo->chip_info,
+		if (copy_to_user(argp, &viaparinfo->shared->chip_info,
 				sizeof(struct chip_information)))
 			return -EFAULT;
 		break;
@@ -1028,7 +1028,7 @@ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
 	}
 
 	if ((((struct viafb_par *)(info->par))->iga_path == IGA2)
-	    && (viaparinfo->chip_info->name == UNICHROME_CLE266))
+	    && (viaparinfo->shared->chip_info.name == UNICHROME_CLE266))
 		return -ENODEV;
 
 	/* When duoview and using lcd , use soft cursor */
@@ -1110,9 +1110,9 @@ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
 			return 0;
 		p_viafb_par = (struct viafb_par *)info->par;
 
-		if ((p_viafb_par->chip_info->name == UNICHROME_CX700) ||
-			(p_viafb_par->chip_info->name == UNICHROME_VX800) ||
-			((p_viafb_par->chip_info->name == UNICHROME_VX855))) {
+		if ((p_viafb_par->shared->chip_info.name == UNICHROME_CX700) ||
+			(p_viafb_par->shared->chip_info.name == UNICHROME_VX800) ||
+			((p_viafb_par->shared->chip_info.name == UNICHROME_VX855))) {
 			bg_col =
 			    (((info->cmap.red)[viacursor.image.bg_color] &
 			    0xFFC0) << 14) |
@@ -1289,18 +1289,18 @@ static void viafb_set_device(struct device_t active_dev)
 	/* Check property of LCD: */
 	if (viafb_LCD_ON) {
 		if (active_dev.lcd_dsp_cent) {
-			viaparinfo->lvds_setting_info->display_method =
+			viaparinfo->shared->lvds_setting_info.display_method =
 				viafb_lcd_dsp_method = LCD_CENTERING;
 		} else {
-			viaparinfo->lvds_setting_info->display_method =
+			viaparinfo->shared->lvds_setting_info.display_method =
 				viafb_lcd_dsp_method = LCD_EXPANDSION;
 		}
 
 		if (active_dev.lcd_mode == LCD_SPWG) {
-			viaparinfo->lvds_setting_info->lcd_mode =
+			viaparinfo->shared->lvds_setting_info.lcd_mode =
 				viafb_lcd_mode = LCD_SPWG;
 		} else {
-			viaparinfo->lvds_setting_info->lcd_mode =
+			viaparinfo->shared->lvds_setting_info.lcd_mode =
 				viafb_lcd_mode = LCD_OPENLDI;
 		}
 
@@ -1367,34 +1367,34 @@ static int get_primary_device(void)
 	/* Rule: device on iga1 path are the primary device. */
 	if (viafb_SAMM_ON) {
 		if (viafb_CRT_ON) {
-			if (viaparinfo->crt_setting_info->iga_path == IGA1) {
+			if (viaparinfo->shared->crt_setting_info.iga_path == IGA1) {
 				DEBUG_MSG(KERN_INFO "CRT IGA Path:%d\n",
-					viaparinfo->
-					crt_setting_info->iga_path);
+					viaparinfo->shared->
+					crt_setting_info.iga_path);
 				primary_device = CRT_Device;
 			}
 		}
 		if (viafb_DVI_ON) {
-			if (viaparinfo->tmds_setting_info->iga_path == IGA1) {
+			if (viaparinfo->shared->tmds_setting_info.iga_path == IGA1) {
 				DEBUG_MSG(KERN_INFO "DVI IGA Path:%d\n",
-					viaparinfo->
-					tmds_setting_info->iga_path);
+					viaparinfo->shared->
+					tmds_setting_info.iga_path);
 				primary_device = DVI_Device;
 			}
 		}
 		if (viafb_LCD_ON) {
-			if (viaparinfo->lvds_setting_info->iga_path == IGA1) {
+			if (viaparinfo->shared->lvds_setting_info.iga_path == IGA1) {
 				DEBUG_MSG(KERN_INFO "LCD IGA Path:%d\n",
-					viaparinfo->
-					lvds_setting_info->iga_path);
+					viaparinfo->shared->
+					lvds_setting_info.iga_path);
 				primary_device = LCD_Device;
 			}
 		}
 		if (viafb_LCD2_ON) {
-			if (viaparinfo->lvds_setting_info2->iga_path == IGA1) {
+			if (viaparinfo->shared->lvds_setting_info2.iga_path == IGA1) {
 				DEBUG_MSG(KERN_INFO "LCD2 IGA Path:%d\n",
-					viaparinfo->
-					lvds_setting_info2->iga_path);
+					viaparinfo->shared->
+					lvds_setting_info2.iga_path);
 				primary_device = LCD2_Device;
 			}
 		}
@@ -1464,17 +1464,17 @@ static int apply_device_setting(struct viafb_ioctl_setting setting_info,
 			need_set_mode = 1;
 			if (setting_info.lcd_attributes.display_center) {
 				/* Centering */
-				viaparinfo->lvds_setting_info->display_method =
+				viaparinfo->shared->lvds_setting_info.display_method =
 				    LCD_CENTERING;
 				viafb_lcd_dsp_method = LCD_CENTERING;
-				viaparinfo->lvds_setting_info2->display_method =
+				viaparinfo->shared->lvds_setting_info2.display_method =
 				    viafb_lcd_dsp_method = LCD_CENTERING;
 			} else {
 				/* expandsion */
-				viaparinfo->lvds_setting_info->display_method =
+				viaparinfo->shared->lvds_setting_info.display_method =
 				    LCD_EXPANDSION;
 				viafb_lcd_dsp_method = LCD_EXPANDSION;
-				viaparinfo->lvds_setting_info2->display_method =
+				viaparinfo->shared->lvds_setting_info2.display_method =
 				    LCD_EXPANDSION;
 				viafb_lcd_dsp_method = LCD_EXPANDSION;
 			}
@@ -1484,14 +1484,14 @@ static int apply_device_setting(struct viafb_ioctl_setting setting_info,
 			need_set_mode = 1;
 			if (setting_info.lcd_attributes.lcd_mode ==
 				LCD_SPWG) {
-				viaparinfo->lvds_setting_info->lcd_mode =
+				viaparinfo->shared->lvds_setting_info.lcd_mode =
 					viafb_lcd_mode = LCD_SPWG;
 			} else {
-				viaparinfo->lvds_setting_info->lcd_mode =
+				viaparinfo->shared->lvds_setting_info.lcd_mode =
 					viafb_lcd_mode = LCD_OPENLDI;
 			}
-			viaparinfo->lvds_setting_info2->lcd_mode =
-			    viaparinfo->lvds_setting_info->lcd_mode;
+			viaparinfo->shared->lvds_setting_info2.lcd_mode =
+			    viaparinfo->shared->lvds_setting_info.lcd_mode;
 		}
 
 		if (setting_info.lcd_operation_flag & OP_LCD_PANEL_ID) {
@@ -1547,13 +1547,13 @@ static void retrieve_device_setting(struct viafb_ioctl_setting
 		setting_info->device_status |= LCD2_Device;
 	if ((viaparinfo->video_on_crt == 1) && (viafb_CRT_ON == 1)) {
 		setting_info->video_device_status =
-			viaparinfo->crt_setting_info->iga_path;
+			viaparinfo->shared->crt_setting_info.iga_path;
 	} else if ((viaparinfo->video_on_dvi == 1) && (viafb_DVI_ON == 1)) {
 		setting_info->video_device_status =
-			viaparinfo->tmds_setting_info->iga_path;
+			viaparinfo->shared->tmds_setting_info.iga_path;
 	} else if ((viaparinfo->video_on_lcd == 1) && (viafb_LCD_ON == 1)) {
 		setting_info->video_device_status =
-			viaparinfo->lvds_setting_info->iga_path;
+			viaparinfo->shared->lvds_setting_info.iga_path;
 	} else {
 		setting_info->video_device_status = 0;
 	}
@@ -1683,10 +1683,10 @@ static int parse_port(char *opt_str, int *output_interface)
 
 static void parse_lcd_port(void)
 {
-	parse_port(viafb_lcd_port, &viaparinfo->chip_info->lvds.
+	parse_port(viafb_lcd_port, &viaparinfo->shared->chip_info.lvds.
 		output_interface);
 	/*Initialize to avoid unexpected behavior */
-	viaparinfo->chip_info->lvds2.output_interface = INTERFACE_NONE;
+	viaparinfo->shared->chip_info.lvds2.output_interface = INTERFACE_NONE;
 
 	DEBUG_MSG(KERN_INFO "parse_lcd_port: viafb_lcd_port:%s,interface:%d\n",
 		  viafb_lcd_port, viaparinfo->chip_info->lvds.output_interface);
@@ -1694,7 +1694,7 @@ static void parse_lcd_port(void)
 
 static void parse_dvi_port(void)
 {
-	parse_port(viafb_dvi_port, &viaparinfo->chip_info->tmds.
+	parse_port(viafb_dvi_port, &viaparinfo->shared->chip_info.tmds.
 		output_interface);
 
 	DEBUG_MSG(KERN_INFO "parse_dvi_port: viafb_dvi_port:%s,interface:%d\n",
@@ -1879,27 +1879,27 @@ static int viafb_vt1636_proc_read(char *buf, char **start,
 {
 	int len = 0;
 	u8 vt1636_08 = 0, vt1636_09 = 0;
-	switch (viaparinfo->chip_info->lvds.name) {
+	switch (viaparinfo->shared->chip_info.lvds.name) {
 	case VT1636_LVDS:
 		vt1636_08 =
-		    viafb_gpio_i2c_read_lvds(viaparinfo->lvds_setting_info,
-		    &viaparinfo->chip_info->lvds, 0x08) & 0x0f;
+		    viafb_gpio_i2c_read_lvds(&viaparinfo->shared->lvds_setting_info,
+		    &viaparinfo->shared->chip_info.lvds, 0x08) & 0x0f;
 		vt1636_09 =
-		    viafb_gpio_i2c_read_lvds(viaparinfo->lvds_setting_info,
-		    &viaparinfo->chip_info->lvds, 0x09) & 0x1f;
+		    viafb_gpio_i2c_read_lvds(&viaparinfo->shared->lvds_setting_info,
+		    &viaparinfo->shared->chip_info.lvds, 0x09) & 0x1f;
 		len += sprintf(buf + len, "%x %x\n", vt1636_08, vt1636_09);
 		break;
 	default:
 		break;
 	}
-	switch (viaparinfo->chip_info->lvds2.name) {
+	switch (viaparinfo->shared->chip_info.lvds2.name) {
 	case VT1636_LVDS:
 		vt1636_08 =
-		    viafb_gpio_i2c_read_lvds(viaparinfo->lvds_setting_info2,
-			&viaparinfo->chip_info->lvds2, 0x08) & 0x0f;
+		    viafb_gpio_i2c_read_lvds(&viaparinfo->shared->lvds_setting_info2,
+			&viaparinfo->shared->chip_info.lvds2, 0x08) & 0x0f;
 		vt1636_09 =
-		    viafb_gpio_i2c_read_lvds(viaparinfo->lvds_setting_info2,
-			&viaparinfo->chip_info->lvds2, 0x09) & 0x1f;
+		    viafb_gpio_i2c_read_lvds(&viaparinfo->shared->lvds_setting_info2,
+			&viaparinfo->shared->chip_info.lvds2, 0x09) & 0x1f;
 		len += sprintf(buf + len, " %x %x\n", vt1636_08, vt1636_09);
 		break;
 	default:
@@ -1921,7 +1921,7 @@ static int viafb_vt1636_proc_write(struct file *file,
 		return -EFAULT;
 	buf[length - 1] = '\0';	/*Ensure end string */
 	pbuf = &buf[0];
-	switch (viaparinfo->chip_info->lvds.name) {
+	switch (viaparinfo->shared->chip_info.lvds.name) {
 	case VT1636_LVDS:
 		for (i = 0; i < 2; i++) {
 			value = strsep(&pbuf, " ");
@@ -1933,17 +1933,17 @@ static int viafb_vt1636_proc_write(struct file *file,
 					reg_val.Index = 0x08;
 					reg_val.Mask = 0x0f;
 					viafb_gpio_i2c_write_mask_lvds
-					    (viaparinfo->lvds_setting_info,
-					    &viaparinfo->
-					    chip_info->lvds, reg_val);
+					    (&viaparinfo->shared->lvds_setting_info,
+					    &viaparinfo->shared->
+					    chip_info.lvds, reg_val);
 					break;
 				case 1:
 					reg_val.Index = 0x09;
 					reg_val.Mask = 0x1f;
 					viafb_gpio_i2c_write_mask_lvds
-					    (viaparinfo->lvds_setting_info,
-					    &viaparinfo->
-					    chip_info->lvds, reg_val);
+					    (&viaparinfo->shared->lvds_setting_info,
+					    &viaparinfo->shared->
+					    chip_info.lvds, reg_val);
 					break;
 				default:
 					break;
@@ -1956,7 +1956,7 @@ static int viafb_vt1636_proc_write(struct file *file,
 	default:
 		break;
 	}
-	switch (viaparinfo->chip_info->lvds2.name) {
+	switch (viaparinfo->shared->chip_info.lvds2.name) {
 	case VT1636_LVDS:
 		for (i = 0; i < 2; i++) {
 			value = strsep(&pbuf, " ");
@@ -1968,17 +1968,17 @@ static int viafb_vt1636_proc_write(struct file *file,
 					reg_val.Index = 0x08;
 					reg_val.Mask = 0x0f;
 					viafb_gpio_i2c_write_mask_lvds
-					    (viaparinfo->lvds_setting_info2,
-					    &viaparinfo->
-					    chip_info->lvds2, reg_val);
+					    (&viaparinfo->shared->lvds_setting_info2,
+					    &viaparinfo->shared->
+					    chip_info.lvds2, reg_val);
 					break;
 				case 1:
 					reg_val.Index = 0x09;
 					reg_val.Mask = 0x1f;
 					viafb_gpio_i2c_write_mask_lvds
-					    (viaparinfo->lvds_setting_info2,
-					    &viaparinfo->
-					    chip_info->lvds2, reg_val);
+					    (&viaparinfo->shared->lvds_setting_info2,
+					    &viaparinfo->shared->
+					    chip_info.lvds2, reg_val);
 					break;
 				default:
 					break;
@@ -2019,8 +2019,8 @@ static void viafb_init_proc(struct proc_dir_entry **viafb_entry)
 			entry->read_proc = viafb_dfpl_proc_read;
 			entry->write_proc = viafb_dfpl_proc_write;
 		}
-		if (VT1636_LVDS == viaparinfo->chip_info->lvds.name ||
-		    VT1636_LVDS == viaparinfo->chip_info->lvds2.name) {
+		if (VT1636_LVDS == viaparinfo->shared->chip_info.lvds.name ||
+		    VT1636_LVDS == viaparinfo->shared->chip_info.lvds2.name) {
 			entry = create_proc_entry("vt1636", 0, *viafb_entry);
 			if (entry) {
 				entry->read_proc = viafb_vt1636_proc_read;
@@ -2049,41 +2049,20 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 	char *tmpc, *tmpm;
 	char *tmpc_sec, *tmpm_sec;
 	int rc, vmode_index;
-	u32 tmds_length, lvds_length, crt_length, chip_length, viafb_par_length;
 
 	DEBUG_MSG(KERN_INFO "VIAFB PCI Probe!!\n");
-
-	viafb_par_length = ALIGN(sizeof(struct viafb_par), BITS_PER_LONG/8);
-	tmds_length = ALIGN(sizeof(struct tmds_setting_information),
-		BITS_PER_LONG/8);
-	lvds_length = ALIGN(sizeof(struct lvds_setting_information),
-		BITS_PER_LONG/8);
-	crt_length = ALIGN(sizeof(struct lvds_setting_information),
-		BITS_PER_LONG/8);
-	chip_length = ALIGN(sizeof(struct chip_information), BITS_PER_LONG/8);
 
 	/* Allocate fb_info and ***_par here, also including some other needed
 	 * variables
 	*/
-	viafbinfo = framebuffer_alloc(viafb_par_length + 2 * lvds_length +
-				      tmds_length + crt_length + chip_length,
-				      &pdev->dev);
+	viafbinfo = framebuffer_alloc( sizeof( struct viafb_par ) + sizeof( struct viafb_shared ), &pdev->dev);
 	if (!viafbinfo) {
 		printk(KERN_ERR"Could not allocate memory for viafb_info.\n");
 		return -ENOMEM;
 	}
 
 	viaparinfo = (struct viafb_par *)viafbinfo->par;
-	viaparinfo->tmds_setting_info = (struct tmds_setting_information *)
-		((unsigned long)viaparinfo + viafb_par_length);
-	viaparinfo->lvds_setting_info = (struct lvds_setting_information *)
-		((unsigned long)viaparinfo->tmds_setting_info + tmds_length);
-	viaparinfo->lvds_setting_info2 = (struct lvds_setting_information *)
-		((unsigned long)viaparinfo->lvds_setting_info + lvds_length);
-	viaparinfo->crt_setting_info = (struct crt_setting_information *)
-		((unsigned long)viaparinfo->lvds_setting_info2 + lvds_length);
-	viaparinfo->chip_info = (struct chip_information *)
-		((unsigned long)viaparinfo->crt_setting_info + crt_length);
+	viaparinfo->shared = viafbinfo->par + sizeof( struct viafb_par );
 
 	if (viafb_dual_fb)
 		viafb_SAMM_ON = 1;
@@ -2226,7 +2205,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 		viafbinfo->flags |= FBINFO_HWACCEL_DISABLED;
 
 	if (viafb_dual_fb) {
-		viafbinfo1 = framebuffer_alloc(viafb_par_length, NULL);
+		viafbinfo1 = framebuffer_alloc( sizeof( struct viafb_par ), NULL );
 		if (!viafbinfo1) {
 			printk(KERN_ERR
 			"allocate the second framebuffer struct error\n");
@@ -2234,7 +2213,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 			goto out_unmap_mmio;
 		}
 		viaparinfo1 = viafbinfo1->par;
-		memcpy(viaparinfo1, viaparinfo, viafb_par_length);
+		memcpy( viaparinfo1, viaparinfo, sizeof( struct viafb_par ) );
 		viafbinfo1->fix.smem_len = viafbinfo->fix.smem_len -
 							viafb_second_offset;
 		viafbinfo->fix.smem_len = viafb_second_offset;
@@ -2297,7 +2276,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 		goto out_fb1_release;
 
 	if (viafb_dual_fb && (viafb_primary_dev == LCD_Device)
-	    && (viaparinfo->chip_info->name == UNICHROME_CLE266)) {
+	    && (viaparinfo->shared->chip_info.name == UNICHROME_CLE266)) {
 		rc = register_framebuffer(viafbinfo1);
 		if (rc)
 			goto out_dealloc_cmap;
@@ -2307,7 +2286,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 		goto out_fb1_unreg_lcd_cle266;
 
 	if (viafb_dual_fb && ((viafb_primary_dev != LCD_Device)
-			|| (viaparinfo->chip_info->name != UNICHROME_CLE266))) {
+			|| (viaparinfo->shared->chip_info.name != UNICHROME_CLE266))) {
 		rc = register_framebuffer(viafbinfo1);
 		if (rc)
 			goto out_fb_unreg;
@@ -2324,7 +2303,7 @@ out_fb_unreg:
 	unregister_framebuffer(viafbinfo);
 out_fb1_unreg_lcd_cle266:
 	if (viafb_dual_fb && (viafb_primary_dev == LCD_Device)
-            && (viaparinfo->chip_info->name == UNICHROME_CLE266))
+            && (viaparinfo->shared->chip_info.name == UNICHROME_CLE266))
 		unregister_framebuffer(viafbinfo1);
 out_dealloc_cmap:
 	fb_dealloc_cmap(&viafbinfo->cmap);
