@@ -30,20 +30,27 @@ static struct fb_var_screeninfo default_var;
 static char *viafb_name = "Via";
 static u32 pseudo_pal[17];
 
+/* module parameter
+ * read-only, changing the pointer makes module_param go wild
+ * ! only used for module_param, in the code viafb_d* vars should be used !
+ */
+static char *viafb_mode = NULL; 
+static char *viafb_mode1 = NULL;
+
 /* video mode */
-static char *viafb_mode = "640x480";
-static char *viafb_mode1 = "640x480";
+static char *viafb_dmode = "640x480";
+static char *viafb_dmode1 = "640x480";
 static int viafb_resMode = VIA_RES_640X480;
 
 /* Added for specifying active devices.*/
-char *viafb_active_dev = "";
+static char *viafb_active_dev = "";
 
 /* Added for specifying video on devices.*/
-char *viafb_video_dev = "";
+static char *viafb_video_dev = "";
 
 /*Added for specify lcd output port*/
-char *viafb_lcd_port = "";
-char *viafb_dvi_port = "";
+static char *viafb_lcd_port = "";
+static char *viafb_dvi_port = "";
 
 static void viafb_set_device(struct device_t active_dev);
 static int apply_device_setting(struct viafb_ioctl_setting setting_info,
@@ -1216,9 +1223,9 @@ int viafb_get_mode_index(int hres, int vres, int flag)
 
 	viafb_resMode = viafb_modentry[i].mode_index;
 	if (flag)
-		viafb_mode1 = viafb_modentry[i].mode_res;
+		viafb_dmode1 = viafb_modentry[i].mode_res;
 	else
-		viafb_mode = viafb_modentry[i].mode_res;
+		viafb_dmode = viafb_modentry[i].mode_res;
 
 	return viafb_resMode;
 }
@@ -2139,7 +2146,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 	}
 
 	viafb_FB_MM = viafbinfo->screen_base;
-	tmpm = viafb_mode;
+	tmpm = viafb_dmode;
 	tmpc = strsep(&tmpm, "x");
 	strict_strtoul(tmpc, 0, &default_xres);
 	strict_strtoul(tmpm, 0, &default_yres);
@@ -2148,8 +2155,8 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 	DEBUG_MSG(KERN_INFO "0->index=%d\n", vmode_index);
 
 	if (viafb_SAMM_ON == 1) {
-		if (strcmp(viafb_mode, viafb_mode1)) {
-			tmpm_sec = viafb_mode1;
+		if (strcmp(viafb_dmode, viafb_dmode1)) {
+			tmpm_sec = viafb_dmode1;
 			tmpc_sec = strsep(&tmpm_sec, "x");
 			strict_strtoul(tmpc_sec, 0,
 				(unsigned long *)&viafb_second_xres);
@@ -2368,9 +2375,9 @@ static int __init viafb_setup(char *options)
 			continue;
 
 		if (!strncmp(this_opt, "viafb_mode1=", 12))
-			viafb_mode1 = kstrdup(this_opt + 12, GFP_KERNEL);
+			viafb_dmode1 = kstrdup(this_opt + 12, GFP_KERNEL);
 		else if (!strncmp(this_opt, "viafb_mode=", 11))
-			viafb_mode = kstrdup(this_opt + 11, GFP_KERNEL);
+			viafb_dmode = kstrdup(this_opt + 11, GFP_KERNEL);
 		else if (!strncmp(this_opt, "viafb_bpp1=", 11))
 			strict_strtoul(this_opt + 11, 0,
 				(unsigned long *)&viafb_bpp1);
@@ -2470,6 +2477,13 @@ static int __init viafb_init(void)
 	if (fb_get_options("viafb", &option))
 		return -ENODEV;
 	viafb_setup(option);
+#else
+	/* initialize the dynamic versions of module parameters */
+	if ( viafb_mode )
+		viafb_dmode = viafb_mode;
+	
+	if ( viafb_mode1 )
+		viafb_dmode1 = viafb_mode1;
 #endif
 	printk(KERN_INFO
        "VIA Graphics Intergration Chipset framebuffer %d.%d initializing\n",
