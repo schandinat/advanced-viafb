@@ -655,67 +655,55 @@ void viafb_set_iga_path(void)
 	}
 }
 
+void	viafb_SetPrimaryDisplayAddress( u32 addr )
+{
+	DEBUG_MSG( KERN_INFO "viafb_SetPrimaryDisplayAddress( 0x%08X )\n", addr );
+	viafb_write_reg( 0x0D, VIACR, addr&0xFF );
+	viafb_write_reg( 0x0C, VIACR, (addr>>8)&0xFF );
+	viafb_write_reg( 0x34, VIACR, (addr>>16)&0xFF );
+	/* assume that first addr has same width as second (spec broken) */
+	viafb_write_reg_mask( 0x48, VIACR, (addr>>24)&0xFF, 0x0F );
+	return;
+}
+
+void    viafb_SetSecondaryDisplayAddress( u32 addr )
+{
+	DEBUG_MSG( KERN_INFO "viafb_SetSecondaryDisplayAddress( 0x%08X )\n", addr );
+	/* secondary display supports only quadword aligned memory */
+	viafb_write_reg_mask( 0x62, VIACR, (addr>>2)&0xFF, 0xFE );
+	viafb_write_reg( 0x63, VIACR, (addr>>10)&0xFF );
+	viafb_write_reg( 0x64, VIACR, (addr>>18)&0xFF );
+	viafb_write_reg_mask( 0xA3, VIACR, (addr>>26)&0xFF, 0x03 );
+	return;
+}
+
 void viafb_set_start_addr(void)
 {
-	unsigned long offset = 0, tmp = 0, size = 0;
+	unsigned long size;
 	unsigned long length;
 
 	DEBUG_MSG(KERN_INFO "viafb_set_start_addr!\n");
 	viafb_unlock_crt();
-	/* update starting address of IGA1 */
-	viafb_write_reg(CR0C, VIACR, 0x00);	/*initial starting address */
-	viafb_write_reg(CR0D, VIACR, 0x00);
-	viafb_write_reg(CR34, VIACR, 0x00);
-	viafb_write_reg_mask(CR48, VIACR, 0x00, 0x1F);
+	viafb_SetPrimaryDisplayAddress( 0 );
+	viafb_SetSecondaryDisplayAddress( viafb_SAMM_ON ? viafb_second_offset : 0 );
 
 	if (viafb_dual_fb) {
 		viaparinfo->iga_path = IGA1;
 		viaparinfo1->iga_path = IGA2;
 	}
 
-	if (viafb_SAMM_ON == 1) {
-		if (!viafb_dual_fb) {
-			if (viafb_second_size)
-				size = viafb_second_size * 1024 * 1024;
-			else
-				size = 8 * 1024 * 1024;
-		} else {
-
+	if (viafb_SAMM_ON) {
+		if (!viafb_dual_fb)
+			size = (viafb_second_size ? viafb_second_size : 8) * 1024 * 1024;
+		else
 			size = viafbinfo1->fix.smem_len;
-		}
-		offset = viafb_second_offset;
-		DEBUG_MSG(KERN_INFO
-			  "viafb_second_size=%lx, second start_adddress=%lx\n",
-			  size, offset);
-	}
-	if (viafb_SAMM_ON == 1) {
-		offset = offset >> 3;
 
-		tmp = viafb_read_reg(VIACR, 0x62) & 0x01;
-		tmp |= (offset & 0x7F) << 1;
-		viafb_write_reg(CR62, VIACR, tmp);
-		viafb_write_reg(CR63, VIACR, ((offset & 0x7F80) >> 7));
-		viafb_write_reg(CR64, VIACR, ((offset & 0x7F8000) >> 15));
-		viafb_write_reg(CRA3, VIACR, ((offset & 0x3800000) >> 23));
-	} else {
-		/* update starting address */
-		viafb_write_reg(CR62, VIACR, 0x00);
-		viafb_write_reg(CR63, VIACR, 0x00);
-		viafb_write_reg(CR64, VIACR, 0x00);
-		viafb_write_reg(CRA3, VIACR, 0x00);
-	}
-
-	if (viafb_SAMM_ON == 1) {
-		if (viafb_accel) {
-			if (!viafb_dual_fb)
-				length = size - viaparinfo->fbmem_used;
-			else
-				length = size - viaparinfo1->fbmem_used;
-		} else
+		if (viafb_accel) 
+			length = size - (viafb_dual_fb ? viaparinfo1->fbmem_used : viaparinfo->fbmem_used);
+		else
 			length = size;
-		offset = (unsigned long)(void *)viafb_FB_MM +
-			viafb_second_offset;
-		memset((void *)offset, 0, length);
+
+		memset( viafb_FB_MM + viafb_second_offset, 0, length );
 	}
 
 	viafb_lock_crt();
