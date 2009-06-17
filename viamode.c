@@ -327,7 +327,6 @@ struct io_reg CX700_ModeXregs[] = { {VIASR, SR10, 0xFF, 0x01},
 {VIACR, CR97, 0xFF, 0x00},
 {VIACR, CR99, 0xFF, 0x00},
 {VIACR, CR9B, 0xFF, 0x00},
-{VIACR, CRD2, 0xFF, 0xFF}	/* TMDS/LVDS control register.         */
 };
 
 /* For VT3353: Common Setting for Video Mode */
@@ -388,7 +387,6 @@ struct io_reg VX800_ModeXregs[] = { {VIASR, SR10, 0xFF, 0x01},
 {VIACR, CR97, 0xFF, 0x00},
 {VIACR, CR99, 0xFF, 0x00},
 {VIACR, CR9B, 0xFF, 0x00},
-{VIACR, CRD2, 0xFF, 0xFF}	/* TMDS/LVDS control register.         */
 };
 
 struct io_reg VX855_ModeXregs[] = {
@@ -443,7 +441,6 @@ struct io_reg VX855_ModeXregs[] = {
 {VIACR, CR97, 0xFF, 0x00},
 {VIACR, CR99, 0xFF, 0x00},
 {VIACR, CR9B, 0xFF, 0x00},
-{VIACR, CRD2, 0xFF, 0xFF}           /* TMDS/LVDS control register.         */
 };
 
 /* Video Mode Table */
