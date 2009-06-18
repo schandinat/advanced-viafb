@@ -87,7 +87,6 @@ extern int viafb_LCD_ON;
 extern int viafb_DVI_ON;
 extern int viafb_accel;
 extern int viafb_hotplug;
-extern int viafb_memsize;
 
 extern int strict_strtoul(const char *cp, unsigned int base,
 	unsigned long *res);

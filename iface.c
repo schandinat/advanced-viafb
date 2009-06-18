@@ -21,26 +21,6 @@
 
 #include "global.h"
 
-/* Get frame buffer size from VGA BIOS */
-
-unsigned int viafb_get_memsize(void)
-{
-	unsigned int m;
-
-	/* If memory size provided by user */
-	if (viafb_memsize)
-		m = viafb_memsize * Mb;
-	else {
-		m = (unsigned int)viafb_read_reg(VIASR, SR39);
-		m = m * (4 * Mb);
-
-		if ((m < (16 * Mb)) || (m > (64 * Mb)))
-			m = 16 * Mb;
-	}
-	DEBUG_MSG(KERN_INFO "framebuffer size = %d Mb\n", m / Mb);
-	return m;
-}
-
 /* Get Video Buffer Starting Physical Address(back door)*/
 
 unsigned long viafb_get_videobuf_addr(void)
