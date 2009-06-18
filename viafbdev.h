@@ -44,8 +44,6 @@ struct viafb_par {
 
 	void __iomem *io_virt;	/*iospace virtual memory address */
 	unsigned int io;	/*io space address */
-	u32 fbmem_free;		/* Free FB memory */
-	u32 fbmem_used;		/* Use FB memory size */
 	u32 cursor_start;	/* Cursor Start Address */
 	u32 VQ_start;		/* Virtual Queue Start Address */
 	u32 VQ_end;		/* Virtual Queue End Address */

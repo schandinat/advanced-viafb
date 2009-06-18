@@ -53,15 +53,12 @@ void viafb_2d_writel(u_int32_t val, u_int32_t reg)
 
 void viafb_init_accel(void)
 {
-	viaparinfo->fbmem_free -= CURSOR_SIZE;
-	viaparinfo->cursor_start = viaparinfo->fbmem_free;
-	viaparinfo->fbmem_used += CURSOR_SIZE;
+	viaparinfo->cursor_start = viafbinfo->fix.smem_len - CURSOR_SIZE;
 
 	/* Reverse 8*1024 memory space for cursor image */
-	viaparinfo->fbmem_free -= (CURSOR_SIZE + VQ_SIZE);
-	viaparinfo->VQ_start = viaparinfo->fbmem_free;
+	viaparinfo->VQ_start = viafbinfo->fix.smem_len - 2 * CURSOR_SIZE - VQ_SIZE;
 	viaparinfo->VQ_end = viaparinfo->VQ_start + VQ_SIZE - 1;
-	viaparinfo->fbmem_used += (CURSOR_SIZE + VQ_SIZE); }
+}
 
 void viafb_init_2d_engine(void)
 {
