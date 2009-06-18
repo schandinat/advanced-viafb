@@ -142,24 +142,24 @@ bool viafb_lvds_identify_vt1636(void)
 	DEBUG_MSG(KERN_INFO "viafb_lvds_identify_vt1636.\n");
 
 	/* Sense VT1636 LVDS Transmiter */
-	viaparinfo->shared->chip_info.lvds.i2c_slave_addr = VT1636_LVDS_I2C_ADDR;
+	viaparinfo->chip_info->lvds.i2c_slave_addr = VT1636_LVDS_I2C_ADDR;
 
 	/* Check vendor ID first: */
-	viafb_i2c_readbyte((u8) viaparinfo->shared->chip_info.lvds.i2c_slave_addr,
+	viafb_i2c_readbyte((u8) viaparinfo->chip_info->lvds.i2c_slave_addr,
 			   0x00, &Buffer[0]);
-	viafb_i2c_readbyte((u8) viaparinfo->shared->chip_info.lvds.i2c_slave_addr,
+	viafb_i2c_readbyte((u8) viaparinfo->chip_info->lvds.i2c_slave_addr,
 			   0x01, &Buffer[1]);
 
 	if (!((Buffer[0] == 0x06) && (Buffer[1] == 0x11)))
 		return false;
 
 	/* Check Chip ID: */
-	viafb_i2c_readbyte((u8) viaparinfo->shared->chip_info.lvds.i2c_slave_addr,
+	viafb_i2c_readbyte((u8) viaparinfo->chip_info->lvds.i2c_slave_addr,
 			   0x02, &Buffer[0]);
-	viafb_i2c_readbyte((u8) viaparinfo->shared->chip_info.lvds.i2c_slave_addr,
+	viafb_i2c_readbyte((u8) viaparinfo->chip_info->lvds.i2c_slave_addr,
 			   0x03, &Buffer[1]);
 	if ((Buffer[0] == 0x45) && (Buffer[1] == 0x33)) {
-		viaparinfo->shared->chip_info.lvds.name = VT1636_LVDS;
+		viaparinfo->chip_info->lvds.name = VT1636_LVDS;
 		return true;
 	}
 

@@ -37,16 +37,6 @@
 #define VERSION_OS          0	/* 0: for 32 bits OS, 1: for 64 bits OS */
 #define VERSION_MINOR       4
 
-struct viafb_shared
-{
-	/* All the information will be needed to set engine */
-	struct tmds_setting_information tmds_setting_info;
-	struct crt_setting_information crt_setting_info;
-	struct lvds_setting_information lvds_setting_info;
-	struct lvds_setting_information lvds_setting_info2;
-	struct chip_information chip_info;
-};
-
 struct viafb_par {
 	int bpp;
 	int hres;
@@ -69,15 +59,19 @@ struct viafb_par {
 	/* I2C stuff */
 	struct via_i2c_stuff i2c_stuff;
 
+	/* All the information will be needed to set engine */
+	struct tmds_setting_information *tmds_setting_info;
+	struct crt_setting_information *crt_setting_info;
+	struct lvds_setting_information *lvds_setting_info;
+	struct lvds_setting_information *lvds_setting_info2;
+	struct chip_information *chip_info;
+
 	/* some information related to video playing */
 	int video_on_crt;
 	int video_on_dvi;
 	int video_on_lcd;
 
-	/* data shared between all framebuffers */
-	struct viafb_shared	*shared;
 };
-
 struct viafb_modeinfo {
 	u32 xres;
 	u32 yres;

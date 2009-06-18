@@ -44,7 +44,7 @@ static u_int8_t via_m1_eng_reg[] = {
 
 void viafb_2d_writel(u_int32_t val, u_int32_t reg)
 {
-	if (viaparinfo->shared->chip_info.twod_engine == VIA_2D_ENG_M1 &&
+	if (viaparinfo->chip_info->twod_engine == VIA_2D_ENG_M1 &&
 	    reg < ARRAY_SIZE(via_m1_eng_reg))
 		reg = via_m1_eng_reg[reg];
 
@@ -70,7 +70,7 @@ void viafb_init_2d_engine(void)
 	int i, highest_reg;
 
 	/* init 2D engine regs to reset 2D engine */
-	switch (viaparinfo->shared->chip_info.twod_engine) {
+	switch (viaparinfo->chip_info->twod_engine) {
 	case VIA_2D_ENG_M1:
 		highest_reg = 0x5c;
 		break;
@@ -82,7 +82,7 @@ void viafb_init_2d_engine(void)
 		writel(0x0, viaparinfo->io_virt + i);
 
 	/* Init AGP and VQ regs */
-	switch (viaparinfo->shared->chip_info.name) {
+	switch (viaparinfo->chip_info->name) {
 	case UNICHROME_K8M890:
 	case UNICHROME_P4M900:
 	case UNICHROME_VX800:
@@ -118,7 +118,7 @@ void viafb_init_2d_engine(void)
 			((dwVQStartAddr & 0xFF000000) >> 24) |
 			((dwVQEndAddr & 0xFF000000) >> 16);
 		dwVQLen = 0x53000000 | (VQ_SIZE >> 3);
-		switch (viaparinfo->shared->chip_info.name) {
+		switch (viaparinfo->chip_info->name) {
 		case UNICHROME_K8M890:
 		case UNICHROME_P4M900:
 		case UNICHROME_VX800:
@@ -132,7 +132,7 @@ void viafb_init_2d_engine(void)
 			break;
 		}
 
-		switch (viaparinfo->shared->chip_info.name) {
+		switch (viaparinfo->chip_info->name) {
 		case UNICHROME_K8M890:
 		case UNICHROME_P4M900:
 		case UNICHROME_VX800:
@@ -199,7 +199,7 @@ void viafb_init_2d_engine(void)
 		}
 	} else {
 		/* Disable VQ */
-		switch (viaparinfo->shared->chip_info.name) {
+		switch (viaparinfo->chip_info->name) {
 		case UNICHROME_K8M890:
 		case UNICHROME_P4M900:
 		case UNICHROME_VX800:
@@ -258,7 +258,7 @@ void viafb_set_2d_mode(struct fb_info *info)
 	/* Set source and destination pitch (128bit aligned) */
 	pitch = (viaparinfo->hres * viaparinfo->bpp >> 3) >> 3;
 	pitch_reg = pitch | (pitch << 16);
-	if (viaparinfo->shared->chip_info.twod_engine != VIA_2D_ENG_M1)
+	if (viaparinfo->chip_info->twod_engine != VIA_2D_ENG_M1)
 		pitch_reg |= VIA_PITCH_ENABLE;
 	viafb_2d_writel(pitch_reg, VIA_REG_PITCH);
 }
@@ -304,7 +304,7 @@ int viafb_wait_engine_idle(void)
 	int loop = 0;
 	u_int32_t status_mask;
 
-	switch (viaparinfo->shared->chip_info.twod_engine) {
+	switch (viaparinfo->chip_info->twod_engine) {
 	case VIA_2D_ENG_H5:
 	case VIA_2D_ENG_M1:
 		status_mask = VIA_CMD_RGTR_BUSY_M1 | VIA_2D_ENG_BUSY_M1 |
