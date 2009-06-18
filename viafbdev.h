@@ -39,9 +39,6 @@
 
 struct viafb_par {
 	int bpp;
-	int hres;
-	int vres;
-	int linelength;
 	u32 xoffset;
 	u32 yoffset;
 
@@ -71,6 +68,7 @@ struct viafb_par {
 	int video_on_dvi;
 	int video_on_lcd;
 
+	struct fb_videomode mode;	// to be replaced by using modedb
 };
 struct viafb_modeinfo {
 	u32 xres;
