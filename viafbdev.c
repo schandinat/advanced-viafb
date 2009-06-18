@@ -116,7 +116,6 @@ static void viafb_setup_fixinfo(struct fb_fix_screeninfo *fix,
 {
 	strcpy(fix->id, viafb_name);
 
-	fix->smem_len = viaparinfo->fbmem_free;
 	fix->type = FB_TYPE_PACKED_PIXELS;
 	fix->type_aux = 0;
 
@@ -599,27 +598,28 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
 
 		if (viafb_SAMM_ON == 1) {
 			if (viafb_dual_fb) {
-				u.viasamm.size_prim = viaparinfo->fbmem_free;
-				u.viasamm.size_sec = viaparinfo1->fbmem_free;
+				u.viasamm.size_prim = viafbinfo->fix.smem_len;
+				u.viasamm.size_sec = viafbinfo1->fix.smem_len;
 			} else {
 				if (viafb_second_size) {
 					u.viasamm.size_prim =
-					    viaparinfo->fbmem_free -
+					    viafbinfo->fix.smem_len - 
+					    (viafb_accel ? 2 * CURSOR_SIZE + VQ_SIZE : 0) -
 					    viafb_second_size * 1024 * 1024;
 					u.viasamm.size_sec =
 					    viafb_second_size * 1024 * 1024;
 				} else {
-					u.viasamm.size_prim =
-					    viaparinfo->fbmem_free >> 1;
 					u.viasamm.size_sec =
-					    (viaparinfo->fbmem_free >> 1);
+					u.viasamm.size_prim =
+					    (viafbinfo->fix.smem_len -
+					    (viafb_accel ? 2 * CURSOR_SIZE + VQ_SIZE : 0)) >> 1;
 				}
 			}
 			u.viasamm.mem_base = viafbinfo->fix.smem_start;
 			u.viasamm.offset_sec = viafb_second_offset;
 		} else {
 			u.viasamm.size_prim =
-			    viafbinfo->fix.smem_len - viaparinfo->fbmem_used;
+			    viafbinfo->fix.smem_len - (viafb_accel ? 2 * CURSOR_SIZE + VQ_SIZE : 0);
 			u.viasamm.size_sec = 0;
 			u.viasamm.mem_base = viafbinfo->fix.smem_start;
 			u.viasamm.offset_sec = 0;
@@ -2089,8 +2089,6 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 	viafb_init_chip_info(pdev, ent);
 	viafbinfo->fix.smem_start = pci_resource_start(pdev, 0);
 	viafbinfo->fix.smem_len = viafb_get_fb_size_from_pci();
-	viaparinfo->fbmem_free = viafbinfo->fix.smem_len;
-	viaparinfo->fbmem_used = 0;
 	viafbinfo->screen_base = ioremap_nocache(viafbinfo->fix.smem_start,
 						 viafbinfo->fix.smem_len);
 
@@ -2122,11 +2120,11 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 	}
 
 	if (viafb_second_size && (viafb_second_size < 8)) {
-		viafb_second_offset = viaparinfo->fbmem_free -
+		viafb_second_offset = viafbinfo->fix.smem_len -
 			viafb_second_size * 1024 * 1024;
 	} else {
 		viafb_second_size = 8;
-		viafb_second_offset = viaparinfo->fbmem_free -
+		viafb_second_offset = viafbinfo->fix.smem_len -
 			viafb_second_size * 1024 * 1024;
 	}
 
@@ -2228,11 +2226,6 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 		viafbinfo1->fix.smem_start = viafbinfo->fix.smem_start + 
 							viafb_second_offset;
 
-		viaparinfo1->fbmem_used = viaparinfo->fbmem_used;
-		viaparinfo1->fbmem_free = viafbinfo1->fix.smem_len -
-			viaparinfo1->fbmem_used;
-		viaparinfo->fbmem_free = viafbinfo->fix.smem_len;
-		viaparinfo->fbmem_used = 0;
 		if (viafb_accel) {
 			viaparinfo1->cursor_start =
 			    viaparinfo->cursor_start - viafb_second_offset;
@@ -2245,7 +2238,6 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 		memcpy(viafbinfo1, viafbinfo, sizeof(struct fb_info));
 		viafbinfo1->screen_base = viafbinfo->screen_base +
 			viafb_second_offset;
-		viafbinfo1->fix.smem_len = viaparinfo1->fbmem_free;
 
 		default_var.xres = viafb_second_xres;
 		default_var.yres = viafb_second_yres;

@@ -699,7 +699,7 @@ void viafb_set_start_addr(void)
 			size = viafbinfo1->fix.smem_len;
 
 		if (viafb_accel) 
-			length = size - (viafb_dual_fb ? viaparinfo1->fbmem_used : viaparinfo->fbmem_used);
+			length = size - (viafb_dual_fb ? 0 : 2 * CURSOR_SIZE + VQ_SIZE);
 		else
 			length = size;
 
