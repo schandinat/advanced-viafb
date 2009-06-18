@@ -39,7 +39,6 @@
 
 struct viafb_par {
 	int bpp;
-	int linelength;
 	u32 xoffset;
 	u32 yoffset;
 
