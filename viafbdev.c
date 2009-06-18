@@ -159,8 +159,7 @@ static void viafb_update_viafb_par(struct fb_info *info)
 	ppar = info->par;
 	ppar->bpp = info->var.bits_per_pixel;
 	ppar->linelength = ((info->var.xres_virtual + 7) & ~7) * ppar->bpp / 8;
-	ppar->hres = info->var.xres;
-	ppar->vres = info->var.yres;
+	info->mode->xres = info->var.xres;
 	ppar->xoffset = info->var.xoffset;
 	ppar->yoffset = info->var.yoffset;
 }
@@ -2084,6 +2083,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 		((unsigned long)viaparinfo->lvds_setting_info2 + lvds_length);
 	viaparinfo->chip_info = (struct chip_information *)
 		((unsigned long)viaparinfo->crt_setting_info + crt_length);
+	viafbinfo->mode = &viaparinfo->mode;
 
 	if (viafb_dual_fb)
 		viafb_SAMM_ON = 1;

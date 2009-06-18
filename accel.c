@@ -256,7 +256,7 @@ void viafb_set_2d_mode(struct fb_info *info)
 	viafb_2d_writel(base >> 3, VIA_REG_DSTBASE);
 
 	/* Set source and destination pitch (128bit aligned) */
-	pitch = (viaparinfo->hres * viaparinfo->bpp >> 3) >> 3;
+	pitch = (info->mode->xres * viaparinfo->bpp >> 3) >> 3;
 	pitch_reg = pitch | (pitch << 16);
 	if (viaparinfo->chip_info->twod_engine != VIA_2D_ENG_M1)
 		pitch_reg |= VIA_PITCH_ENABLE;
