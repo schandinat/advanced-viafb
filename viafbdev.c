@@ -110,32 +110,6 @@ static const struct viafb_modeinfo viafb_modentry[] = {
 
 static struct fb_ops viafb_ops;
 
-static struct
-{
-	u32	xres, yres;
-	
-}	lcd_panel_id2res[] =
-{
-	{640, 480},	/* ID  0 */
-	{800, 600},	/* ID  1 */
-	{1024, 768},	/* ID  2 */
-	{1280, 768},	/* ID  3 */
-	{1280, 1024},	/* ID  4 */
-	{1400, 1050},	/* ID  5 */
-	{1600, 1200},	/* ID  6 */
-	{1366, 768},	/* ID  7 */
-	{1024, 600},	/* ID  8 */
-	{1280, 800},	/* ID  9 */
-	{800, 480},	/* ID 10 */
-	{1360, 768},	/* ID 11 */
-	{480, 640}	/* ID 12 */
-};
-
-#define viafb_lcd_get_support_expand_state(xin,yin) \
-	(viafb_lcd_panel_id<sizeof( lcd_panel_id2res ) / sizeof( lcd_panel_id2res[0] ) \
-	&& xin <= lcd_panel_id2res[viafb_lcd_panel_id].xres \
-	&& yin <= lcd_panel_id2res[viafb_lcd_panel_id].yres  )
-
 
 /*====================================================================*/
 /*                      Gamma Function Implementation*/
