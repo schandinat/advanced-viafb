@@ -2432,23 +2432,14 @@ int viafb_setmode(int vmode_index, int hor_res, int ver_res, int video_bpp,
 		}
 	}
 
-	if (viafb_DVI_ON) {
-		if (viafb_SAMM_ON &&
-			(viaparinfo->tmds_setting_info->iga_path == IGA2)) {
-			viafb_dvi_set_mode(viafb_get_mode_index
-				     (viaparinfo->tmds_setting_info->h_active,
-				      viaparinfo->tmds_setting_info->
-				      v_active, 1),
-				     video_bpp1, viaparinfo->
-				     tmds_setting_info->iga_path);
-		} else {
-			viafb_dvi_set_mode(viafb_get_mode_index
-				     (viaparinfo->tmds_setting_info->h_active,
-				      viaparinfo->
-				      tmds_setting_info->v_active, 0),
-				     video_bpp, viaparinfo->
-				     tmds_setting_info->iga_path);
-		}
+	if (viafb_DVI_ON)
+	{
+		index = viafb_get_mode_index(
+			viaparinfo->tmds_setting_info->h_active,
+			viaparinfo->tmds_setting_info->v_active );
+		viafb_dvi_set_mode( index,
+			viafb_SAMM_ON && viaparinfo->tmds_setting_info->iga_path == IGA2 ?
+			video_bpp1 : video_bpp, viaparinfo->tmds_setting_info->iga_path );
 	}
 
 	if (viafb_LCD_ON) {
