@@ -110,6 +110,140 @@ static const struct viafb_modeinfo viafb_modentry[] = {
 
 static struct fb_ops viafb_ops;
 
+static struct
+{
+	u32	xres, yres;
+	
+}	lcd_panel_id2res[] =
+{
+	{640, 480},	/* ID  0 */
+	{800, 600},	/* ID  1 */
+	{1024, 768},	/* ID  2 */
+	{1280, 768},	/* ID  3 */
+	{1280, 1024},	/* ID  4 */
+	{1400, 1050},	/* ID  5 */
+	{1600, 1200},	/* ID  6 */
+	{1366, 768},	/* ID  7 */
+	{1024, 600},	/* ID  8 */
+	{1280, 800},	/* ID  9 */
+	{800, 480},	/* ID 10 */
+	{1360, 768},	/* ID 11 */
+	{480, 640}	/* ID 12 */
+};
+
+#define viafb_lcd_get_support_expand_state(xin,yin) \
+	(viafb_lcd_panel_id<sizeof( lcd_panel_id2res ) / sizeof( lcd_panel_id2res[0] ) \
+	&& xin <= lcd_panel_id2res[viafb_lcd_panel_id].xres \
+	&& yin <= lcd_panel_id2res[viafb_lcd_panel_id].yres  )
+
+
+/*====================================================================*/
+/*                      Gamma Function Implementation*/
+/*====================================================================*/
+
+void viafb_set_gamma_table(int bpp, unsigned int *gamma_table)
+{
+	int i, sr1a;
+	int active_device_amount = 0;
+	int device_status = viafb_DeviceStatus;
+
+	for (i = 0; i < sizeof(viafb_DeviceStatus) * 8; i++) {
+		if (device_status & 1)
+			active_device_amount++;
+		device_status >>= 1;
+	}
+
+	/* 8 bpp mode can't adjust gamma */
+	if (bpp == 8)
+		return ;
+
+	/* Enable Gamma */
+	switch (viaparinfo->chip_info->name) {
+	case UNICHROME_CLE266:
+	case UNICHROME_K400:
+		viafb_write_reg_mask(SR16, VIASR, 0x80, BIT7);
+		break;
+
+	case UNICHROME_K800:
+	case UNICHROME_PM800:
+	case UNICHROME_CN700:
+	case UNICHROME_CX700:
+	case UNICHROME_K8M890:
+	case UNICHROME_P4M890:
+	case UNICHROME_P4M900:
+		viafb_write_reg_mask(CR33, VIACR, 0x80, BIT7);
+		break;
+	}
+	sr1a = (unsigned int)viafb_read_reg(VIASR, SR1A);
+	viafb_write_reg_mask(SR1A, VIASR, 0x0, BIT0);
+
+	/* Fill IGA1 Gamma Table */
+	outb(0, LUT_INDEX_WRITE);
+	for (i = 0; i < 256; i++) {
+		outb(gamma_table[i] >> 16, LUT_DATA);
+		outb(gamma_table[i] >> 8 & 0xFF, LUT_DATA);
+		outb(gamma_table[i] & 0xFF, LUT_DATA);
+	}
+
+	/* If adjust Gamma value in SAMM, fill IGA1,
+	   IGA2 Gamma table simultanous. */
+	/* Switch to IGA2 Gamma Table */
+	if ((active_device_amount > 1) &&
+		!((viaparinfo->chip_info->name == UNICHROME_CLE266) &&
+		(viaparinfo->chip_info->revision < 15))) {
+		viafb_write_reg_mask(SR1A, VIASR, 0x01, BIT0);
+		viafb_write_reg_mask(CR6A, VIACR, 0x02, BIT1);
+
+		/* Fill IGA2 Gamma Table */
+		outb(0, LUT_INDEX_WRITE);
+		for (i = 0; i < 256; i++) {
+			outb(gamma_table[i] >> 16, LUT_DATA);
+			outb(gamma_table[i] >> 8 & 0xFF, LUT_DATA);
+			outb(gamma_table[i] & 0xFF, LUT_DATA);
+		}
+	}
+	viafb_write_reg(SR1A, VIASR, sr1a);
+}
+
+void viafb_get_gamma_table(unsigned int *gamma_table)
+{
+	unsigned char color_r, color_g, color_b;
+	unsigned char sr1a = 0;
+	int i;
+
+	/* Enable Gamma */
+	switch (viaparinfo->chip_info->name) {
+	case UNICHROME_CLE266:
+	case UNICHROME_K400:
+		viafb_write_reg_mask(SR16, VIASR, 0x80, BIT7);
+		break;
+
+	case UNICHROME_K800:
+	case UNICHROME_PM800:
+	case UNICHROME_CN700:
+	case UNICHROME_CX700:
+	case UNICHROME_K8M890:
+	case UNICHROME_P4M890:
+	case UNICHROME_P4M900:
+		viafb_write_reg_mask(CR33, VIACR, 0x80, BIT7);
+		break;
+	}
+	sr1a = viafb_read_reg(VIASR, SR1A);
+	viafb_write_reg_mask(SR1A, VIASR, 0x0, BIT0);
+
+	/* Reading gamma table to get color value */
+	outb(0, LUT_INDEX_READ);
+	for (i = 0; i < 256; i++) {
+		color_r = inb(LUT_DATA);
+		color_g = inb(LUT_DATA);
+		color_b = inb(LUT_DATA);
+		gamma_table[i] =
+		    ((((u32) color_r) << 16) |
+		     (((u16) color_g) << 8)) | color_b;
+	}
+	viafb_write_reg(SR1A, VIASR, sr1a);
+}
+
 
 static void viafb_setup_fixinfo(struct fb_fix_screeninfo *fix,
 	struct viafb_par *viaparinfo)
@@ -547,6 +681,7 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
 	u32 __user *argp = (u32 __user *) arg;
 	u32 gpu32;
 	u32 video_dev_info = 0;
+	bool mobile = false;
 
 	DEBUG_MSG(KERN_INFO "viafb_ioctl: 0x%X !!\n", cmd);
 	memset(&u, 0, sizeof(u));
@@ -724,13 +859,27 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
 		break;
 
 	case VIAFB_GET_DEVICE_SUPPORT:
-		viafb_get_device_support_state(&state_info);
+		state_info = CRT_Device;
+
+		if (viaparinfo->chip_info->tmds.name == VT1632_TMDS)
+			state_info |= DVI_Device;
+
+		if (viaparinfo->chip_info->lvds.name == VT1631_LVDS)
+			state_info |= LCD_Device;
+
 		if (put_user(state_info, argp))
 			return -EFAULT;
 		break;
 
 	case VIAFB_GET_DEVICE_CONNECT:
-		viafb_get_device_connect_state(&state_info);
+		state_info = CRT_Device;
+		if (viafb_dvi_sense())
+			state_info |= DVI_Device;
+
+		viafb_lcd_get_mobile_state(&mobile);
+		if (mobile)
+			state_info |= LCD_Device;
+
 		if (put_user(state_info, argp))
 			return -EFAULT;
 		break;
@@ -775,7 +924,7 @@ static int viafb_ioctl(struct fb_info *info, u_int cmd, u_long arg)
 		break;
 
 	case VIAFB_GET_GAMMA_SUPPORT_STATE:
-		viafb_get_gamma_support_state(viafb_bpp, &state_info);
+		state_info = (viafb_bpp == 8 ? None_Device : CRT_Device | DVI_Device | LCD_Device);
 		if (put_user(state_info, argp))
 			return -EFAULT;
 		break;
