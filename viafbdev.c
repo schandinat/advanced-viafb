@@ -2204,7 +2204,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
 
 	viafb_init_chip_info(pdev, ent);
 	viafbinfo->fix.smem_start = pci_resource_start(pdev, 0);
-	viafbinfo->fix.smem_len = viafb_get_fb_size_from_pci();
+	viafbinfo->fix.smem_len = viafb_get_fb_size_from_pci( viaparinfo->chip_info->name );
 	viafbinfo->screen_base = ioremap_nocache(viafbinfo->fix.smem_start,
 						 viafbinfo->fix.smem_len);
 

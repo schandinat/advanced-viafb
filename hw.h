@@ -939,7 +939,7 @@ int viafb_get_refresh(int hres, int vres, u32 float_refresh);
 void viafb_update_device_setting(int hres, int vres, int bpp,
 			   int vmode_refresh, int flag);
 
-int viafb_get_fb_size_from_pci(void);
+int viafb_get_fb_size_from_pci( int chip_sid );
 void viafb_set_iga_path(void);
 void viafb_set_start_addr(void);
 

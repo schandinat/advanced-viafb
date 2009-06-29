@@ -2591,11 +2591,11 @@ static u_int16_t via_function3[] = {
 
 /* Get the BIOS-configured framebuffer size from PCI configuration space
  * of function 3 in the respective chipset */
-int viafb_get_fb_size_from_pci(void)
+int viafb_get_fb_size_from_pci( int chip_sid )
 {
 	int i;
-	u_int8_t offset = 0;
-	u_int32_t FBSize;
+	u_int8_t offset = 0, unit_shift = chip_sid < UNICHROME_CX700 ? 20 : 22;
+	u_int32_t FBSize = 0;
 	u_int32_t VideoMemSize;
 
 	/* search for the "FUNCTION3" device in this chipset */
@@ -2633,69 +2633,17 @@ int viafb_get_fb_size_from_pci(void)
 
 		pci_read_config_dword(pdev, offset, &FBSize);
 		pci_dev_put(pdev);
+		break; 
 	}
 
-	if (!offset) {
+	if (!offset)
 		printk(KERN_ERR "cannot determine framebuffer size\n");
-		return -EIO;
-	}
 
-	FBSize = FBSize & 0x00007000;
-	DEBUG_MSG(KERN_INFO "FB Size = %x\n", FBSize);
-
-	if (viaparinfo->chip_info->name < UNICHROME_CX700) {
-		switch (FBSize) {
-		case 0x00004000:
-			VideoMemSize = (16 << 20);	/*16M */
-			break;
-
-		case 0x00005000:
-			VideoMemSize = (32 << 20);	/*32M */
-			break;
-
-		case 0x00006000:
-			VideoMemSize = (64 << 20);	/*64M */
-			break;
-
-		default:
-			VideoMemSize = (32 << 20);	/*32M */
-			break;
-		}
-	} else {
-		switch (FBSize) {
-		case 0x00001000:
-			VideoMemSize = (8 << 20);	/*8M */
-			break;
-
-		case 0x00002000:
-			VideoMemSize = (16 << 20);	/*16M */
-			break;
-
-		case 0x00003000:
-			VideoMemSize = (32 << 20);	/*32M */
-			break;
-
-		case 0x00004000:
-			VideoMemSize = (64 << 20);	/*64M */
-			break;
-
-		case 0x00005000:
-			VideoMemSize = (128 << 20);	/*128M */
-			break;
-
-		case 0x00006000:
-			VideoMemSize = (256 << 20);	/*256M */
-			break;
-
-		case 0x00007000:	/* Only on VX855/875 */
-			VideoMemSize = (512 << 20);	/*512M */
-			break;
-
-		default:
-			VideoMemSize = (32 << 20);	/*32M */
-			break;
-		}
-	}
+	FBSize = (FBSize&0x00007000)>>12;
+	if (!FBSize)
+		VideoMemSize = 8<<20; /* worst case scenario: 8MB */
+	else
+		VideoMemSize = (2^FBSize)<<unit_shift;
 
 	return VideoMemSize;
 }
