@@ -176,13 +176,6 @@ is reserved, so it may have problem to set 1600x1200 on IGA2. */
 #define IGA2_FETCH_COUNT_FORMULA(x, y)   \
 	(((x*y)/IGA2_FETCH_COUNT_ALIGN_BYTE) + IGA2_FETCH_COUNT_PATCH_VALUE)
 
-/* Staring Address*/
-
-/* location: {CR0C,0,7},{CR0D,0,7},{CR34,0,7},{CR48,0,1} */
-#define IGA1_STARTING_ADDR_REG_NUM      4
-/* location: {CR62,1,7},{CR63,0,7},{CR64,0,7} */
-#define IGA2_STARTING_ADDR_REG_NUM      3
-
 /* Define Display OFFSET*/
 /* These value are by HW suggested value*/
 /* location: {SR17,0,7} */
@@ -662,22 +655,6 @@ struct fetch_count {
 	struct iga2_fetch_count iga2_fetch_count_reg;
 };
 
-/* Starting Address Register */
-struct iga1_starting_addr {
-	int reg_num;
-	struct io_register reg[IGA1_STARTING_ADDR_REG_NUM];
-};
-
-struct iga2_starting_addr {
-	int reg_num;
-	struct io_register reg[IGA2_STARTING_ADDR_REG_NUM];
-};
-
-struct starting_addr {
-	struct iga1_starting_addr iga1_starting_addr_reg;
-	struct iga2_starting_addr iga2_starting_addr_reg;
-};
-
 /* LCD Power Sequence Timer */
 struct lcd_pwd_seq_td0 {
 	int reg_num;
@@ -942,5 +919,7 @@ void viafb_update_device_setting(int hres, int vres, int bpp,
 int viafb_get_fb_size_from_pci(void);
 void viafb_set_iga_path(void);
 void viafb_set_start_addr(void);
+void	viafb_SetPrimaryDisplayAddress( u32 addr );
+void	viafb_SetSecondaryDisplayAddress( u32 addr );
 
 #endif /* __HW_H__ */
