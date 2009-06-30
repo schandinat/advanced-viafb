@@ -1941,16 +1941,6 @@ void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
 	load_fix_bit_crtc_reg();
 	viafb_lock_crt();
 	viafb_write_reg_mask(CR17, VIACR, 0x80, BIT7);
-	switch (set_iga) {
-	case IGA1_IGA2:
-	case IGA1:
-		viafb_SetPrimaryDisplayLine( h_addr*bpp_byte );
-		if (set_iga == IGA1)
-			break;
-	case IGA2:
-		viafb_SetSecondaryDisplayLine( h_addr*bpp_byte );
-		break;
-	}
 	viafb_load_fetch_count_reg(h_addr, bpp_byte, set_iga);
 
 	/* load FIFO */
@@ -2501,6 +2491,12 @@ int viafb_setmode(int vmode_index, int hor_res, int ver_res, int video_bpp,
 	if (viafb_SAMM_ON == 1)
 		viafb_write_reg_mask(CR6A, VIACR, 0xC0, BIT6 + BIT7);
 
+	viafb_SetPrimaryDisplayLine( viafbinfo->var.xres_virtual * (viafbinfo->var.bits_per_pixel>>3) );
+	if (viafb_SAMM_ON)
+		viafb_SetSecondaryDisplayLine( viafb_second_virtual_xres * (viafb_bpp1 >> 3) );
+	else
+		viafb_SetSecondaryDisplayLine( viafbinfo->var.xres_virtual * (viafbinfo->var.bits_per_pixel >> 3) );
+	
 	device_screen_on();
 	return 1;
 }
@@ -2705,18 +2701,6 @@ void viafb_set_dpa_gfx(int output_interface, struct GFX_DPA_SETTING\
 			break;
 		}
 	}
-}
-
-void viafb_memory_pitch_patch(struct fb_info *info)
-{
-	if (info->var.xres == info->var.xres_virtual)
-		return;
-
-	viafb_SetPrimaryDisplayLine( info->var.xres_virtual * (info->var.bits_per_pixel>>3) );
-	if (viafb_SAMM_ON)
-		viafb_SetSecondaryDisplayLine( viafb_second_virtual_xres * (viafb_bpp1 >> 3) );
-	else
-		viafb_SetSecondaryDisplayLine( info->var.xres_virtual * (info->var.bits_per_pixel >> 3) );
 }
 
 /*According var's xres, yres fill var's other timing information*/

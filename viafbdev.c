@@ -266,7 +266,6 @@ static int viafb_check_var(struct fb_var_screeninfo *var,
 	struct viafb_par *p_viafb_par;
 	ppar = info->par;
 
-
 	DEBUG_MSG(KERN_INFO "viafb_check_var!\n");
 	/* Sanity check */
 	/* HW neither support interlacte nor double-scaned mode */
@@ -346,10 +345,6 @@ static int viafb_set_par(struct fb_info *info)
 		viafb_setmode(vmode_index, info->var.xres, info->var.yres,
 			info->var.bits_per_pixel, vmode_index1,
 			viafb_second_xres, viafb_second_yres, viafb_bpp1);
-
-		/*We should set memory offset according virtual_x */
-		/*Fix me:put this function into viafb_setmode */
-		viafb_memory_pitch_patch(info);
 
 		viafb_update_info( info );
 
