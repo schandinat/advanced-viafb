@@ -56,7 +56,6 @@ extern int viafb_platform_epia_dvi;
 extern int viafb_device_lcd_dualedge;
 extern int viafb_bus_width;
 extern int viafb_display_hardware_layout;
-extern struct offset offset_reg;
 extern struct viafb_par *viaparinfo;
 extern struct viafb_par *viaparinfo1;
 extern struct fb_info *viafbinfo;

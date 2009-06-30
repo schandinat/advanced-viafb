@@ -21,12 +21,6 @@
 
 #include "global.h"
 
-struct offset offset_reg = {
-	/* IGA1 Offset Register */
-	{IGA1_OFFSET_REG_NUM, {{CR13, 0, 7}, {CR35, 5, 7} } },
-	/* IGA2 Offset Register */
-	{IGA2_OFFSET_REG_NUM, {{CR66, 0, 7}, {CR67, 0, 1} } }
-};
 
 static struct pll_map pll_value[] = {
 	{CLK_25_175M, CLE266_PLL_25_175M, K800_PLL_25_175M,
@@ -677,6 +671,27 @@ void    viafb_SetSecondaryDisplayAddress( u32 addr )
 	return;
 }
 
+void	viafb_SetPrimaryDisplayLine( u32 length )
+{
+	DEBUG_MSG( KERN_INFO "viafb_SetPrimaryDisplayLine( %d )\n", length );
+	/* spec does not say that first adapter skips 3 bits but old 
+	   code did it and seems to be reasonable in analogy to 2nd adapter */
+	length = length>>3;
+	viafb_write_reg( 0x13, VIACR, (length)&0xFF );
+	viafb_write_reg_mask( 0x35, VIACR, (length>>(8-5))&0xE0, 0xE0 );
+	return;
+}
+
+void	viafb_SetSecondaryDisplayLine( u32 length )
+{
+	DEBUG_MSG( KERN_INFO "viafb_SetSecondaryDisplayLine( %d )\n", length );
+	length = length>>3;
+	viafb_write_reg( 0x66, VIACR, (length)&0xFF );
+	viafb_write_reg_mask( 0x67, VIACR, (length>>8)&0x03, 0x03 );
+	viafb_write_reg_mask( 0x71, VIACR, (length>>(10-7))&0x80, 0x80 );
+	return;
+}
+
 void viafb_set_start_addr(void)
 {
 	unsigned long size;
@@ -1133,30 +1148,6 @@ void viafb_write_regx(struct io_reg RegTable[], int ItemNum)
 		RegTemp = inb(RegTable[i].port + 1);
 		RegTemp = (RegTemp & (~RegTable[i].mask)) | RegTable[i].value;
 		outb(RegTemp, RegTable[i].port + 1);
-	}
-}
-
-void viafb_load_offset_reg(int h_addr, int bpp_byte, int set_iga)
-{
-	int reg_value;
-	int viafb_load_reg_num;
-	struct io_register *reg;
-
-	switch (set_iga) {
-	case IGA1_IGA2:
-	case IGA1:
-		reg_value = IGA1_OFFSET_FORMULA(h_addr, bpp_byte);
-		viafb_load_reg_num = offset_reg.iga1_offset_reg.reg_num;
-		reg = offset_reg.iga1_offset_reg.reg;
-		viafb_load_reg(reg_value, viafb_load_reg_num, reg, VIACR);
-		if (set_iga == IGA1)
-			break;
-	case IGA2:
-		reg_value = IGA2_OFFSET_FORMULA(h_addr, bpp_byte);
-		viafb_load_reg_num = offset_reg.iga2_offset_reg.reg_num;
-		reg = offset_reg.iga2_offset_reg.reg;
-		viafb_load_reg(reg_value, viafb_load_reg_num, reg, VIACR);
-		break;
 	}
 }
 
@@ -1951,7 +1942,16 @@ void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
 	load_fix_bit_crtc_reg();
 	viafb_lock_crt();
 	viafb_write_reg_mask(CR17, VIACR, 0x80, BIT7);
-	viafb_load_offset_reg(h_addr, bpp_byte, set_iga);
+	switch (set_iga) {
+	case IGA1_IGA2:
+	case IGA1:
+		viafb_SetPrimaryDisplayLine( h_addr*bpp_byte );
+		if (set_iga == IGA1)
+			break;
+	case IGA2:
+		viafb_SetSecondaryDisplayLine( h_addr*bpp_byte );
+		break;
+	}
 	viafb_load_fetch_count_reg(h_addr, bpp_byte, set_iga);
 
 	/* load FIFO */
@@ -2710,20 +2710,14 @@ void viafb_set_dpa_gfx(int output_interface, struct GFX_DPA_SETTING\
 
 void viafb_memory_pitch_patch(struct fb_info *info)
 {
-	if (info->var.xres != info->var.xres_virtual) {
-		viafb_load_offset_reg(info->var.xres_virtual,
-				info->var.bits_per_pixel >> 3, IGA1);
+	if (info->var.xres == info->var.xres_virtual)
+		return;
 
-		if (viafb_SAMM_ON) {
-			viafb_load_offset_reg(viafb_second_virtual_xres,
-				viafb_bpp1 >> 3,
-					IGA2);
-		} else {
-			viafb_load_offset_reg(info->var.xres_virtual,
-					info->var.bits_per_pixel >> 3, IGA2);
-		}
-
-	}
+	viafb_SetPrimaryDisplayLine( info->var.xres_virtual * (info->var.bits_per_pixel>>3) );
+	if (viafb_SAMM_ON)
+		viafb_SetSecondaryDisplayLine( viafb_second_virtual_xres * (viafb_bpp1 >> 3) );
+	else
+		viafb_SetSecondaryDisplayLine( info->var.xres_virtual * (info->var.bits_per_pixel >> 3) );
 }
 
 /*According var's xres, yres fill var's other timing information*/

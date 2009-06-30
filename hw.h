@@ -147,14 +147,8 @@ is reserved, so it may have problem to set 1600x1200 on IGA2. */
 /* location: {CR5F,0,4} */
 #define IGA2_VER_SYNC_END_REG_NUM       1
 
-/* Define Offset and Fetch Count Register*/
+/* Define Fetch Count Register*/
 
-/* location: {CR13,0,7},{CR35,5,7} */
-#define IGA1_OFFSET_REG_NUM             2
-/* 8 bytes alignment. */
-#define IGA1_OFFSER_ALIGN_BYTE          8
-/* x: H resolution, y: color depth */
-#define IGA1_OFFSET_FORMULA(x, y)        ((x*y)/IGA1_OFFSER_ALIGN_BYTE)
 /* location: {SR1C,0,7},{SR1D,0,1} */
 #define IGA1_FETCH_COUNT_REG_NUM        2
 /* 16 bytes alignment. */
@@ -164,11 +158,6 @@ is reserved, so it may have problem to set 1600x1200 on IGA2. */
 #define IGA1_FETCH_COUNT_FORMULA(x, y)   \
 	(((x*y)/IGA1_FETCH_COUNT_ALIGN_BYTE) + IGA1_FETCH_COUNT_PATCH_VALUE)
 
-/* location: {CR66,0,7},{CR67,0,1} */
-#define IGA2_OFFSET_REG_NUM             2
-#define IGA2_OFFSET_ALIGN_BYTE          8
-/* x: H resolution, y: color depth */
-#define IGA2_OFFSET_FORMULA(x, y)        ((x*y)/IGA2_OFFSET_ALIGN_BYTE)
 /* location: {CR65,0,7},{CR67,2,3} */
 #define IGA2_FETCH_COUNT_REG_NUM        2
 #define IGA2_FETCH_COUNT_ALIGN_BYTE     16
@@ -628,23 +617,6 @@ struct iga2_ver_sync_end {
 	struct io_register reg[IGA2_VER_SYNC_END_REG_NUM];
 };
 
-/* IGA1 Offset Register */
-struct iga1_offset {
-	int reg_num;
-	struct io_register reg[IGA1_OFFSET_REG_NUM];
-};
-
-/* IGA2 Offset Register */
-struct iga2_offset {
-	int reg_num;
-	struct io_register reg[IGA2_OFFSET_REG_NUM];
-};
-
-struct offset {
-	struct iga1_offset iga1_offset_reg;
-	struct iga2_offset iga2_offset_reg;
-};
-
 /* IGA1 Fetch Count Register */
 struct iga1_fetch_count {
 	int reg_num;
@@ -918,7 +890,8 @@ void viafb_write_reg(u8 index, u16 io_port, u8 data);
 u8 viafb_read_reg(int io_port, u8 index);
 void viafb_lock_crt(void);
 void viafb_unlock_crt(void);
-void viafb_load_offset_reg(int h_addr, int bpp_byte, int set_iga);
+void	viafb_SetPrimaryDisplayLine( u32 length );
+void	viafb_SetSecondaryDisplayLine( u32 length );
 void viafb_load_fetch_count_reg(int h_addr, int bpp_byte, int set_iga);
 void viafb_write_regx(struct io_reg RegTable[], int ItemNum);
 struct VideoModeTable *viafb_get_modetbl_pointer(int Index);
