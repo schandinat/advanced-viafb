@@ -655,19 +655,18 @@ void	viafb_SetPrimaryDisplayAddress( u32 addr )
 	viafb_write_reg( 0x0D, VIACR, addr&0xFF );
 	viafb_write_reg( 0x0C, VIACR, (addr>>8)&0xFF );
 	viafb_write_reg( 0x34, VIACR, (addr>>16)&0xFF );
-	/* assume that first addr has same width as second (spec broken) */
-	viafb_write_reg_mask( 0x48, VIACR, (addr>>24)&0xFF, 0x0F );
+	viafb_write_reg_mask( 0x48, VIACR, (addr>>24)&0x1F, 0x1F );
 	return;
 }
 
-void    viafb_SetSecondaryDisplayAddress( u32 addr )
+void	viafb_SetSecondaryDisplayAddress( u32 addr )
 {
 	DEBUG_MSG( KERN_INFO "viafb_SetSecondaryDisplayAddress( 0x%08X )\n", addr );
 	/* secondary display supports only quadword aligned memory */
-	viafb_write_reg_mask( 0x62, VIACR, (addr>>2)&0xFF, 0xFE );
+	viafb_write_reg_mask( 0x62, VIACR, (addr>>2)&0xFE, 0xFE );
 	viafb_write_reg( 0x63, VIACR, (addr>>10)&0xFF );
 	viafb_write_reg( 0x64, VIACR, (addr>>18)&0xFF );
-	viafb_write_reg_mask( 0xA3, VIACR, (addr>>26)&0xFF, 0x03 );
+	viafb_write_reg_mask( 0xA3, VIACR, (addr>>26)&0x07, 0x07 );
 	return;
 }
 

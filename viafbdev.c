@@ -596,11 +596,7 @@ static int viafb_pan_display(struct fb_var_screeninfo *var,
 
 	DEBUG_MSG(KERN_INFO "\nviafb_pan_display,offset =%d ", offset);
 
-	viafb_write_reg_mask(0x48, 0x3d4, ((offset >> 24) & 0x3), 0x3);
-	viafb_write_reg_mask(0x34, 0x3d4, ((offset >> 16) & 0xff), 0xff);
-	viafb_write_reg_mask(0x0c, 0x3d4, ((offset >> 8) & 0xff), 0xff);
-	viafb_write_reg_mask(0x0d, 0x3d4, (offset & 0xff), 0xff);
-
+	viafb_SetPrimaryDisplayAddress( offset );
 	return 0;
 }
 
