@@ -691,6 +691,27 @@ void	viafb_SetSecondaryDisplayLine( u32 length )
 	return;
 }
 
+#define BPP2HW(bpp)	((bpp) == 8 ? 0 : ((bpp) <= 16 ? 1 : ((bpp) == 30 ? 2 : 3)))
+
+void	viafb_SetPrimaryDisplayColor( u32 bpp )
+{
+	DEBUG_MSG( KERN_INFO "viafb_SetPrimaryDisplayColor( %d )\n", bpp );
+	viafb_write_reg_mask( 0x15, VIASR, BPP2HW( bpp )<<2, 0x0C );
+	if (bpp==15)
+		viafb_write_reg_mask( 0x15, VIASR, 0x00, 0x10 );
+	else if (bpp==16)
+		viafb_write_reg_mask( 0x15, VIASR, 0x10, 0x10 );
+
+	return;
+}
+
+void	viafb_SetSecondaryDisplayColor( u32 bpp )
+{
+	DEBUG_MSG( KERN_INFO "viafb_SetSecondaryDisplayColor( %d )\n", bpp );
+	viafb_write_reg_mask( 0x67, VIACR, BPP2HW( bpp )<<6, 0xC0 );
+	return;
+}
+
 void viafb_set_start_addr(void)
 {
 	unsigned long size;
@@ -1841,35 +1862,6 @@ void viafb_load_crtc_timing(struct display_timing device_timing,
 	viafb_lock_crt();
 }
 
-void viafb_set_color_depth(int bpp_byte, int set_iga)
-{
-	if (set_iga == IGA1) {
-		switch (bpp_byte) {
-		case MODE_8BPP:
-			viafb_write_reg_mask(SR15, VIASR, 0x22, 0x7E);
-			break;
-		case MODE_16BPP:
-			viafb_write_reg_mask(SR15, VIASR, 0xB6, 0xFE);
-			break;
-		case MODE_32BPP:
-			viafb_write_reg_mask(SR15, VIASR, 0xAE, 0xFE);
-			break;
-		}
-	} else {
-		switch (bpp_byte) {
-		case MODE_8BPP:
-			viafb_write_reg_mask(CR67, VIACR, 0x00, BIT6 + BIT7);
-			break;
-		case MODE_16BPP:
-			viafb_write_reg_mask(CR67, VIACR, 0x40, BIT6 + BIT7);
-			break;
-		case MODE_32BPP:
-			viafb_write_reg_mask(CR67, VIACR, 0xC0, BIT6 + BIT7);
-			break;
-		}
-	}
-}
-
 void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
 	int mode_index, int bpp_byte, int set_iga)
 {
@@ -1948,8 +1940,10 @@ void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
 	    && (viaparinfo->chip_info->name != UNICHROME_K400))
 		viafb_load_FIFO_reg(set_iga, h_addr, v_addr);
 
-	/* load SR Register About Memory and Color part */
-	viafb_set_color_depth(bpp_byte, set_iga);
+	if (set_iga == IGA1) 
+		viafb_SetPrimaryDisplayColor( bpp_byte * 8 );
+	else
+		viafb_SetSecondaryDisplayColor( bpp_byte * 8 );
 
 	pll_D_N = viafb_get_clk_value(crt_table[index].clk);
 	DEBUG_MSG(KERN_INFO "PLL=%x", pll_D_N);

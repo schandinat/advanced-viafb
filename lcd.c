@@ -874,7 +874,10 @@ void viafb_lcd_set_mode(struct crt_mode_table *mode_crt_table,
 		    && (viaparinfo->chip_info->name != UNICHROME_K400))
 			viafb_load_FIFO_reg(set_iga, set_hres, set_vres);
 
-		viafb_set_color_depth(mode_bpp / 8, set_iga);
+		if (set_iga == IGA1) 
+			viafb_SetPrimaryDisplayColor( mode_bpp );
+		else
+			viafb_SetSecondaryDisplayColor( mode_bpp );
 	}
 
 	fill_lcd_format();
