@@ -1924,6 +1924,7 @@ void viafb_fill_crtc_timing(struct crt_mode_table *crt_table,
 	switch (set_iga) {
 	case IGA1:
 		viafb_load_crtc_timing(crt_reg, IGA1);
+		viafb_write_reg_mask( 0x15, VIASR, 0x20, 0x20 );
 		break;
 	case IGA2:
 		viafb_load_crtc_timing(crt_reg, IGA2);
