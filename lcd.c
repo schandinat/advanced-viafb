@@ -21,6 +21,7 @@
 
 #include "global.h"
 #include "lcdtbl.h"
+#include "via_hw.h"
 
 static struct iga2_shadow_crtc_timing iga2_shadow_crtc_reg = {
 	/* IGA2 Shadow Horizontal Total */
@@ -780,6 +781,7 @@ void viafb_lcd_set_mode(struct crt_mode_table *mode_crt_table,
 	struct display_timing mode_crt_reg, panel_crt_reg;
 	struct crt_mode_table *panel_crt_table = NULL;
 	struct VideoModeTable *vmode_tbl = NULL;
+	struct display_timing crt_reg;
 
 	DEBUG_MSG(KERN_INFO "viafb_lcd_set_mode!!\n");
 	/* Get mode table */
@@ -798,28 +800,44 @@ void viafb_lcd_set_mode(struct crt_mode_table *mode_crt_table,
 	plvds_setting_info->vclk = panel_crt_table->clk;
 	if (set_iga == IGA1) {
 		/* IGA1 doesn't have LCD scaling, so set it as centering. */
-		viafb_load_crtc_timing(lcd_centering_timging
-				 (mode_crt_reg, panel_crt_reg), IGA1);
+		crt_reg = lcd_centering_timging(mode_crt_reg, panel_crt_reg);
+		viafb_SetPrimaryDisplayTiming(
+			crt_reg.hor_addr,
+			crt_reg.ver_addr,
+			crt_reg.hor_total - (crt_reg.hor_sync_start + crt_reg.hor_sync_end),
+			crt_reg.hor_sync_start - crt_reg.hor_addr,
+			crt_reg.ver_total - (crt_reg.ver_sync_start + crt_reg.ver_sync_end),
+			crt_reg.ver_sync_start - crt_reg.ver_addr,
+			crt_reg.hor_sync_end,
+			crt_reg.ver_sync_end );
 	} else {
 		/* Expansion */
 		if ((plvds_setting_info->display_method ==
 		     LCD_EXPANDSION) & ((set_hres != panel_hres)
 					|| (set_vres != panel_vres))) {
 			/* expansion timing IGA2 loaded panel set timing*/
-			viafb_load_crtc_timing(panel_crt_reg, IGA2);
-			DEBUG_MSG(KERN_INFO "viafb_load_crtc_timing!!\n");
+			crt_reg = panel_crt_reg;
 			load_lcd_scaling(set_hres, set_vres, panel_hres,
 					 panel_vres);
 			DEBUG_MSG(KERN_INFO "load_lcd_scaling!!\n");
 		} else {	/* Centering */
 			/* centering timing IGA2 always loaded panel
 			   and mode releative timing */
-			viafb_load_crtc_timing(lcd_centering_timging
-					 (mode_crt_reg, panel_crt_reg), IGA2);
+			crt_reg = lcd_centering_timging(mode_crt_reg, panel_crt_reg);
 			viafb_write_reg_mask(CR79, VIACR, 0x00,
 				BIT0 + BIT1 + BIT2);
 			/* LCD scaling disabled */
 		}
+		
+		viafb_SetSecondaryDisplayTiming(
+			crt_reg.hor_addr,
+			crt_reg.ver_addr,
+			crt_reg.hor_total - (crt_reg.hor_sync_start + crt_reg.hor_sync_end),
+			crt_reg.hor_sync_start - crt_reg.hor_addr,
+			crt_reg.ver_total - (crt_reg.ver_sync_start + crt_reg.ver_sync_end),
+			crt_reg.ver_sync_start - crt_reg.ver_addr,
+			crt_reg.hor_sync_end,
+			crt_reg.ver_sync_end );
 	}
 
 	if (set_iga == IGA1_IGA2) {
