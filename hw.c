@@ -2293,7 +2293,7 @@ int viafb_get_fb_size_from_pci( int chip_sid )
 	if (!FBSize)
 		VideoMemSize = 8<<20; /* worst case scenario: 8MB */
 	else
-		VideoMemSize = (2^FBSize)<<unit_shift;
+		VideoMemSize = 1<<FBSize<<unit_shift;
 
 	return VideoMemSize;
 }
